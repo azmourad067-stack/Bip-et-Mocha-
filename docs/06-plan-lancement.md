@@ -4,17 +4,28 @@
 Atteindre les seuils du Creator Rewards Program : **10 000 abonnés** et
 **100 000 vues sur 30 jours**, puis activer la monétisation.
 
-## Phase 0 — Préparation (semaines -4 à 0)
-- [ ] Valider les [décisions ouvertes](#décisions-à-prendre)
+## Phase 0 — Préparation (6 semaines, ~2 h/jour)
+| Semaine | Objectif |
+|---|---|
+| S1 | Prise en main de Blender (style cartoon, EEVEE) · design de Bip et Mocha (croquis + images de référence IA) |
+| S2 | Modèles 3D de Bip et Mocha (base IA image→3D + nettoyage) · rigs |
+| S3 | Décor cuisine + accessoires (IA) · caméras préréglées · tests de capture de mouvement |
+| S4 | Bibliothèque d'animations · banque de sons (IA + enregistrements) · jingle |
+| S5 | Production des épisodes 1 à 3 (les premiers prennent plus de temps, c'est normal) |
+| S6 | Production des épisodes 4 à 6 + micro-gags · création des comptes |
+
+Objectif de sortie : **6 épisodes + 6 micro-gags d'avance** (environ deux semaines de stock).
+
 - [ ] Design final de Bip et Mocha (feuilles de personnages, palette)
 - [ ] Construire la bibliothèque d'assets (voir [04-production.md](04-production.md))
-- [ ] Produire **10 épisodes d'avance** + 10 micro-gags (stock de sécurité)
 - [ ] Créer le compte TikTok **personnel**, réservé au nom `@bipandmocha` (vérifier la dispo) ;
       réserver aussi le nom sur Instagram, YouTube et le domaine web
 - [ ] Photo de profil (Bip + Mocha), bio en émojis : `🤖☕🐱 no words, just chaos`
 
 ## Phase 1 — Trouver le format (jours 1 à 30)
-- **Rythme** : 1 publication par jour (alterner épisodes ≥ 60 s et micro-gags courts).
+- **Rythme** : 5–6 publications par semaine : **3 épisodes ≥ 60 s** + 2–3 micro-gags
+  (voir la semaine type dans [04-production.md](04-production.md#semaine-type-2-hjour)).
+- Garder toujours **au moins une semaine de stock** : en solo, un imprévu ne doit pas casser la régularité.
 - Tester 3 variables, une à la fois : type de hook, durée (60 s vs 90 s), type d'épisode (gag / émotion).
 - Analyser chaque semaine dans TikTok Studio : **taux de visionnage complet**, durée moyenne,
   partages, origine géographique des vues.
@@ -42,9 +53,19 @@ Atteindre les seuils du Creator Rewards Program : **10 000 abonnés** et
 | Partages / vue | > 1 % | > 2 % |
 | Part des vues hors France | > 50 % | > 70 % (preuve que le « sans langue » fonctionne) |
 
-## Décisions à prendre
-1. **Technique de production** : 3D (recommandé), 2D, prises de vue réelles, ou mixte ?
-2. **Qui fait quoi** : seul·e ou en équipe (animation, son, publication) ?
-3. **Rythme réaliste** : combien d'heures par semaine pour le projet ?
-4. **Usage de l'IA** : aucun, en appoint, ou important (impact sur la monétisation) ?
-5. **Personnages** : valider Bip = robot et Mocha = chat, ou autre (chien, hamster…) ?
+## Décisions prises
+| Sujet | Choix |
+|---|---|
+| Technique | **3D** (Blender, style « sitcom » à plateau fixe) |
+| Équipe | **Seul** |
+| Temps | **~2 h par jour** |
+| IA | **Usage important**, encadré par [07-pipeline-ia.md](07-pipeline-ia.md) |
+| Personnages | **Bip = robot, Mocha = chat** — validé |
+
+## Points de vigilance liés à ces choix
+- **Seul + 2 h/jour** : le risque n°1 est l'épuisement. Ne pas dépasser 3 épisodes par
+  semaine au début ; augmenter seulement si le stock grossit.
+- **IA importante** : surveiller dès les premiers épisodes monétisables si certaines vidéos
+  sont refusées, et réduire la part d'IA visible si c'est le cas.
+- **Délais** : avec ce rythme, atteindre les seuils en 90 jours est un objectif ambitieux,
+  pas une garantie. Compter plutôt 3 à 6 mois après le lancement.

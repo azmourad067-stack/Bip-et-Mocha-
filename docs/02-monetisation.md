@@ -54,13 +54,27 @@ le Creator Rewards sert surtout de socle.
   **Commercial Music Library** de TikTok, ou banque libre de droits avec licence commerciale.
 - ✅ Bruitages : créés maison ou sous licence commerciale. **Garder les preuves de licence.**
 
-### Si on utilise de l'IA dans la production
+### IA (usage important dans ce projet)
 - TikTok exige une **étiquette « Généré par IA »** pour les contenus réalistes générés par IA,
-  et peut l'ajouter automatiquement (Content Credentials / C2PA).
-- Le risque principal est l'inéligibilité pour contenu **« non original ou synthétique »**.
-- Règle du projet : l'IA est un **outil** (aide à l'animation, au nettoyage, à l'upscale),
-  jamais l'auteur. Personnages, scénarios, storyboard, timing et sound design sont faits par nous.
-  Activer l'étiquette IA dès que l'IA génère une part significative de l'image.
+  et peut l'ajouter automatiquement (Content Credentials / C2PA). Une étiquette retirée ou
+  oubliée est plus risquée qu'une étiquette mise : **dans le doute, on l'active.**
+- Le vrai risque est l'inéligibilité pour contenu **« non original ou synthétique »**.
+  TikTok vise surtout les contenus produits en masse, sans auteur identifiable et sans
+  personnages récurrents. Bip & Mocha doit être tout l'inverse.
+- **Ce qui nous protège** (à respecter dans chaque épisode) :
+  1. Les personnages sont **nos propres modèles 3D**, identiques d'un épisode à l'autre
+     → l'IA ne « réinvente » jamais Bip ou Mocha.
+  2. Le **scénario, le storyboard, la mise en scène, le timing comique et le montage** sont
+     faits par nous (l'IA peut proposer, on décide et on réécrit).
+  3. L'IA sert d'**accélérateur** à des étapes précises (voir [07-pipeline-ia.md](07-pipeline-ia.md)),
+     pas à générer l'épisode d'un seul prompt.
+  4. On garde les **fichiers de travail** (.blend, storyboards, projets de montage) : preuve
+     d'originalité en cas de contestation.
+- **Licences des outils IA** : vérifier que l'abonnement autorise l'**usage commercial**
+  (souvent réservé aux offres payantes, notamment pour la musique et la vidéo générées).
+  Archiver la preuve dans `licences/`.
+- Si une vidéo est refusée à la monétisation : faire appel depuis TikTok Studio, et noter
+  dans `episodes/` quelle part d'IA elle contenait, pour ajuster le dosage.
 
 ### Propriété intellectuelle
 - Bip & Mocha doivent être des créations **100 % originales** (pas de ressemblance avec
@@ -74,7 +88,8 @@ le Creator Rewards sert surtout de socle.
 - [ ] Durée ≥ 60 s (sauf teaser volontaire)
 - [ ] 100 % original, aucune séquence réutilisée d'un tiers
 - [ ] Aucune musique non licenciée ; licences archivées
-- [ ] Étiquette IA activée si nécessaire
+- [ ] Étiquette IA activée (par défaut, vu notre usage important)
+- [ ] Personnages = nos modèles 3D, pas une génération IA libre
 - [ ] Aucun texte nécessaire à la compréhension
 - [ ] Tous publics, rien de choquant
 - [ ] Publiée depuis le compte personnel éligible

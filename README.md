@@ -21,9 +21,11 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 | 3 | [Format vidéo](docs/03-format-video.md) | Structure d'un épisode, règles « sans langue », specs techniques |
 | 4 | [Production](docs/04-production.md) | Options de fabrication, pipeline, outils, assets |
 | 5 | [Épisodes](docs/05-episodes.md) | 12 pitchs + 1 script détaillé |
-| 6 | [Plan de lancement](docs/06-plan-lancement.md) | Plan 90 jours, objectifs, KPIs |
+| 6 | [Plan de lancement](docs/06-plan-lancement.md) | Plan 90 jours, objectifs, KPIs, décisions prises |
+| 7 | [Pipeline IA](docs/07-pipeline-ia.md) | Où et comment utiliser l'IA sans perdre la monétisation |
 
 ## Statut
 
-Phase 0 — conception. Prochaine étape : valider les choix ouverts listés dans
-[le plan de lancement](docs/06-plan-lancement.md#décisions-à-prendre).
+Phase 0 — préparation. Choix validés : **3D (Blender) · solo · ~2 h/jour · IA importante**.
+Prochaine étape : semaine 1 du [plan de préparation](docs/06-plan-lancement.md#phase-0--préparation-6-semaines-2-hjour)
+(design de Bip et Mocha).
