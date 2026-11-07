@@ -23,9 +23,10 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 | 5 | [Épisodes](docs/05-episodes.md) | 12 pitchs + 1 script détaillé |
 | 6 | [Plan de lancement](docs/06-plan-lancement.md) | Plan 90 jours, objectifs, KPIs, décisions prises |
 | 7 | [Pipeline IA](docs/07-pipeline-ia.md) | Où et comment utiliser l'IA sans perdre la monétisation |
+| 8 | [Fiches personnages](docs/08-fiches-personnages.md) | Proportions, palette, 18 expressions de Bip, guide Blender, prompts IA |
 
 ## Statut
 
 Phase 0 — préparation. Choix validés : **3D (Blender) · solo · ~2 h/jour · IA importante**.
 Prochaine étape : semaine 1 du [plan de préparation](docs/06-plan-lancement.md#phase-0--préparation-6-semaines-2-hjour)
-(design de Bip et Mocha).
+(design de Bip et Mocha) avec les [fiches personnages](docs/08-fiches-personnages.md).

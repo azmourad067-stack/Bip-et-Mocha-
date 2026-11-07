@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620"><rect width="1000" height="620" fill="#FBF7F1"/><line x1="0" y1="520" x2="1000" y2="520" stroke="#E6DED2" stroke-width="1.5"/><line x1="0" y1="420" x2="1000" y2="420" stroke="#E6DED2" stroke-width="1.5"/><line x1="0" y1="320" x2="1000" y2="320" stroke="#E6DED2" stroke-width="1.5"/><line x1="0" y1="220" x2="1000" y2="220" stroke="#E6DED2" stroke-width="1.5"/><line x1="0" y1="120" x2="1000" y2="120" stroke="#E6DED2" stroke-width="1.5"/><line x1="0" y1="20" x2="1000" y2="20" stroke="#E6DED2" stroke-width="1.5"/><line x1="0" y1="520" x2="1000" y2="520" stroke="#3B2F28" stroke-width="3"/>
+  <line x1="280" y1="260" x2="280" y2="210" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="280" cy="200" r="14" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M182 390 Q140 410 148 450" fill="none" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round" stroke-width="12" stroke-linecap="round"/>
+  <path d="M378 390 Q420 410 412 450" fill="none" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="148" cy="458" r="12" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="412" cy="458" r="12" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="280" cy="494" rx="34" ry="26" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="280" cy="370" rx="105" ry="115" fill="#F2EDE4" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M200 440 Q280 488 360 440" fill="none" stroke="#D9D1C3" stroke-width="6"/>
+  <rect x="208" y="306" width="144" height="108" rx="26" fill="#2A2F3A" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <svg x="218" y="315" width="124" height="93" viewBox="0 0 640 480"><rect width="640" height="480" rx="90" fill="#10151F"/><rect x="188" y="170" width="64" height="120" rx="32" fill="#4FD1FF"/><rect x="388" y="170" width="64" height="120" rx="32" fill="#4FD1FF"/></svg>
+  <line x1="720" y1="260" x2="712" y2="210" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="711" cy="200" r="14" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="720" cy="494" rx="34" ry="26" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <ellipse cx="720" cy="370" rx="100" ry="115" fill="#F2EDE4" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M802 308 Q838 360 802 416" fill="#2A2F3A" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M730 392 Q760 420 750 458" fill="none" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="750" cy="466" r="12" fill="#F28C38" stroke="#3B2F28" stroke-width="4" stroke-linejoin="round"/><text x="280" y="590" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#3B2F28" text-anchor="middle">BIP — face</text><text x="720" y="590" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#3B2F28" text-anchor="middle">BIP — profil</text><text x="985" y="425" font-family="Arial, sans-serif" font-size="15" fill="#3B2F28" text-anchor="end">10 cm</text><text x="985" y="325" font-family="Arial, sans-serif" font-size="15" fill="#3B2F28" text-anchor="end">20 cm</text><text x="985" y="225" font-family="Arial, sans-serif" font-size="15" fill="#3B2F28" text-anchor="end">30 cm</text><text x="985" y="125" font-family="Arial, sans-serif" font-size="15" fill="#3B2F28" text-anchor="end">40 cm</text><text x="20" y="40" font-family="Arial, sans-serif" font-size="15" fill="#3B2F28" text-anchor="start">Échelle : 1 carreau = 10 cm · hauteur totale ≈ 32 cm (antenne comprise) · corps ≈ 21 × 23 cm</text></svg>
