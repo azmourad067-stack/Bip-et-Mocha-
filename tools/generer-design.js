@@ -313,6 +313,19 @@ const palettePlanche = () => {
   const rw = cols * (cw + 20) + 20, rh = rows * (ch + lab + 20) + 20;
   fichiers.push([path.join(OUT, 'planche-ecrans-bip'), planche(rw, rh, rec), rw, rh]);
 
+  // Atlas des expressions (6 colonnes x 3 lignes, dans l'ordre de EXPRESSIONS) :
+  // une seule texture pour l'écran de Bip dans Blender (voir tools/blender/preparer-scene.py)
+  const AC = 6, AR = Math.ceil(EXPRESSIONS.length / AC);
+  let atlas = '';
+  EXPRESSIONS.forEach((e, i) => {
+    atlas += `<svg x="${(i % AC) * W}" y="${Math.floor(i / AC) * H}" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${e.svg()}</svg>`;
+  });
+  fichiers.push([path.join(OUT, 'bip-ecran-atlas'),
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${AC * W}" height="${AR * H}"><rect width="100%" height="100%" fill="${P.bipEcranFond}"/>${atlas}</svg>`,
+    AC * W, AR * H]);
+  fs.writeFileSync(path.join(OUT, 'bip-ecran-atlas.json'),
+    JSON.stringify({ colonnes: AC, lignes: AR, expressions: EXPRESSIONS.map((e) => e.id) }, null, 2) + '\n');
+
   const browser = await chromium.launch();
   const page = await browser.newPage({ deviceScaleFactor: 1 });
   for (const [base, svg, w, h] of fichiers) {

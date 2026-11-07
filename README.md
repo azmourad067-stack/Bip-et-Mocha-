@@ -24,6 +24,11 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 | 6 | [Plan de lancement](docs/06-plan-lancement.md) | Plan 90 jours, objectifs, KPIs, décisions prises |
 | 7 | [Pipeline IA](docs/07-pipeline-ia.md) | Où et comment utiliser l'IA sans perdre la monétisation |
 | 8 | [Fiches personnages](docs/08-fiches-personnages.md) | Proportions, palette, 18 expressions de Bip, guide Blender, prompts IA |
+| 9 | [Apprendre Blender — semaine 1](docs/09-apprentissage-blender.md) | Programme jour par jour + script de préparation de scène |
+
+**Scripts des épisodes** : [`episodes/`](episodes/) (épisodes 01 à 06 écrits).
+
+**Outils** : `tools/generer-design.js` (visuels de référence) · `tools/blender/preparer-scene.py` (scène Blender prête à animer).
 
 ## Statut
 

@@ -1,5 +1,7 @@
 # 5. Épisodes
 
+> Les scripts minutés des épisodes 01 à 06 sont dans [`episodes/`](../episodes/).
+
 ## 12 pitchs pour la saison 1
 
 | # | Titre (interne) | Pitch | Chute |
