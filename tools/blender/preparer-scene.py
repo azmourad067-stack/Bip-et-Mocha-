@@ -29,7 +29,7 @@ import bpy
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)  # use_nodes (Blender 5.x)
 
-DEMO = True  # False = pas d'animation de démonstration
+DEMO = globals().get("DEMO", True)  # False = pas d'animation de démonstration
 
 # Si le script ne trouve pas le projet tout seul, coller ici le chemin du dossier
 # du projet (celui qui contient « assets », « docs », « tools »), par exemple :

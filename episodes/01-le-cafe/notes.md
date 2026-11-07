@@ -1,14 +1,42 @@
-# Notes de production — Épisode 01
+# Notes de production — Épisode 01 « Le café »
 
-## Production
-- Temps passé : écriture … · animation … · son … · montage …
-- Nouveaux assets créés (réutilisables) : …
-- Problèmes / à améliorer la prochaine fois : …
+## Animatique 3D v1 (version de travail, non publiable)
+Une **animatique** = l'épisode entier, animé et sonorisé, avec des personnages et un décor
+provisoires. Elle sert à **valider le timing, les gags et la durée (≥ 60 s)** avant de
+produire la version finale.
+
+| Élément | Fichier | Comment le refaire |
+|---|---|---|
+| Scène + animation (2 250 images, 75 s) | `animatique.py` | Blender → Scripting → Ouvrir → ▶ (ou en ligne de commande, voir l'en-tête du fichier) |
+| Décor cuisine | `tools/blender/decor-cuisine.py` | appelé par `animatique.py` |
+| Bande-son (bips, bruitages, musique) | `bande-son.py` → `bande-son.wav` | `python episodes/01-le-cafe/bande-son.py` (numpy requis) |
+| Montage vidéo | `tools/assembler-video.sh` | `tools/assembler-video.sh DOSSIER_IMAGES bande-son.wav sortie.mp4` |
+
+**Rendu de la v1** : 540 × 960 (agrandi en 1080 × 1920 au montage), EEVEE 2 échantillons,
+≈ 2,7 s par image sur 4 processeurs (≈ 1 h 40 pour l'épisode).
+
+### Ce qui est validé par l'animatique
+- Durée : **75 s** → éligible Creator Rewards (≥ 60 s).
+- Structure : hook (catastrophe) → retour en arrière → 3 tentatives → catastrophe → chute tendre → boucle.
+- Tous les plans du script minuté sont en place (14 plans, 4 caméras).
+
+### À améliorer pour la version finale
+- **Personnages définitifs** (semaine 2) : remplacer les blockouts en gardant les noms d'objets
+  `Bip`, `Bip_Ecran`, `Mocha`, `Mocha_Tete`, `Mocha_Paupiere_G/D` → l'animation existante se réapplique.
+- **Animation plus fine** : bras de Bip qui appuient vraiment sur les boutons, pattes de Mocha
+  (aujourd'hui il « glisse »), antenne qui suit les mouvements.
+- **Mousse** : plus de volume et de « remplissage » dans la scène de catastrophe.
+- **Sons** : les sons synthétisés sont des maquettes ; remplacer au moins le miaou et le
+  ronronnement par de vrais enregistrements (ou une banque sous licence commerciale).
+- Rendu final : 1080 × 1920 natif, 16 échantillons ou plus.
 
 ## IA (traçabilité)
-- Outils IA utilisés : …
-- Part générée par IA (estimation) : modèles 3D … · animation … · sons … · musique … · plans vidéo …
-- Étiquette IA activée : oui / non
+- **Animatique v1 entièrement produite par Claude (IA)** par programmation : modèles en formes
+  géométriques, animation par images clés écrites en code, sons et musique synthétisés
+  (aucun échantillon externe, aucune musique sous droits).
+- Pour la **version publiée** : apporter votre contribution créative (design final des
+  personnages, retouches d'animation, timing, montage, sons) et **activer l'étiquette IA**
+  sur TikTok. Voir [07-pipeline-ia.md](../../docs/07-pipeline-ia.md).
 
 ## Publication
 - Date : …
