@@ -31,20 +31,48 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)  # use_nodes (Ble
 
 DEMO = True  # False = pas d'animation de démonstration
 
+# Si le script ne trouve pas le projet tout seul, coller ici le chemin du dossier
+# du projet (celui qui contient « assets », « docs », « tools »), par exemple :
+#   DOSSIER_PROJET = r"C:\Users\moi\Documents\Bip-et-Mocha-"
+DOSSIER_PROJET = r""
+
 # ---------------------------------------------------------------------------
 # Localisation du dépôt (pour charger les images de assets/design/)
 # ---------------------------------------------------------------------------
+FICHIER_TEMOIN = os.path.join("assets", "design", "bip-ecran-atlas.json")
+
+
 def dossier_projet():
     candidats = []
-    if "__file__" in globals():
-        candidats.append(os.path.abspath(__file__))
+    if DOSSIER_PROJET:
+        candidats.append(DOSSIER_PROJET)
+    # Chemin réel du script ouvert dans l'éditeur de texte de Blender
     for t in bpy.data.texts:
         if t.filepath:
-            candidats.append(bpy.path.abspath(t.filepath))
+            candidats.append(os.path.dirname(os.path.abspath(bpy.path.abspath(t.filepath))))
+    # Lancement en ligne de commande (blender --python ...)
+    if "__file__" in globals():
+        candidats.append(os.path.dirname(os.path.abspath(__file__)))
+    # Dossier du fichier .blend, s'il est enregistré
+    if bpy.data.filepath:
+        candidats.append(os.path.dirname(bpy.data.filepath))
+    candidats.append(os.getcwd())
+    # On remonte l'arborescence depuis chaque candidat jusqu'à trouver assets/design/
     for c in candidats:
-        if c.endswith("preparer-scene.py"):
-            return os.path.dirname(os.path.dirname(os.path.dirname(c)))
-    raise RuntimeError("Impossible de trouver le dossier du projet : ouvrir le script depuis le dépôt.")
+        d = c
+        for _ in range(6):
+            if os.path.isfile(os.path.join(d, FICHIER_TEMOIN)):
+                return d
+            parent = os.path.dirname(d)
+            if parent == d:
+                break
+            d = parent
+    raise RuntimeError(
+        "Dossier du projet introuvable. Vérifier que tout le projet est sur l'ordinateur "
+        "(dossiers assets, docs, tools) et pas seulement ce script, puis ouvrir le script "
+        "via Scripting > Ouvrir depuis tools/blender/. Sinon, renseigner DOSSIER_PROJET "
+        "en haut du script. Chemins essayés : " + " | ".join(candidats)
+    )
 
 
 RACINE = dossier_projet()
