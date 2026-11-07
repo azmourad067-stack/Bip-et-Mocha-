@@ -17,9 +17,9 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 | # | Document | Contenu |
 |---|----------|---------|
 | 1 | [Concept & univers](docs/01-concept.md) | Personnages, ton, règles de l'univers |
-| 2 | [Monétisation TikTok](docs/02-monetisation.md) | Règles officielles, sources de revenus, checklist de conformité |
+| 2 | [Monétisation TikTok](docs/02-monetisation.md) | Règles de la monétisation, sources de revenus, checklist de conformité |
 | 3 | [Format vidéo](docs/03-format-video.md) | Structure d'un épisode, règles « sans langue », specs techniques |
-| 4 | [Production](docs/04-production.md) | Options de fabrication, pipeline, outils, budget |
+| 4 | [Production](docs/04-production.md) | Options de fabrication, pipeline, outils, assets |
 | 5 | [Épisodes](docs/05-episodes.md) | 12 pitchs + 1 script détaillé |
 | 6 | [Plan de lancement](docs/06-plan-lancement.md) | Plan 90 jours, objectifs, KPIs |
 
