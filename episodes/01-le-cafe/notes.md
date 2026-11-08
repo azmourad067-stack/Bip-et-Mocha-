@@ -26,6 +26,12 @@ ont besoin de plusieurs rayons, sinon chaque surface est mouchetée.
 - Structure : hook (catastrophe) → retour en arrière → 3 tentatives → catastrophe → chute tendre → boucle.
 - Tous les plans du script minuté sont en place (14 plans, 4 caméras).
 
+### v2 (en cours)
+- Image propre en 1080 × 1920 (voir « Rendu »), mousse dégagée des gros plans.
+- **Yeux de Mocha expressifs** : agacé quand Bip l'essuie, regard caméra vexé, méfiant devant la
+  mousse, attendri devant la tasse (voir `docs/08-fiches-personnages.md`).
+- L'extrait HD de 25 s envoyé avant ce changement a les anciens yeux : le rendu complet repart de zéro.
+
 ### À améliorer pour la version finale
 - **Personnages définitifs** (semaine 2) : remplacer les blockouts en gardant les noms d'objets
   `Bip`, `Bip_Ecran`, `Mocha`, `Mocha_Tete`, `Mocha_Paupiere_G/D` → l'animation existante se réapplique.

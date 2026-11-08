@@ -201,16 +201,8 @@ def saute(obj, f, hauteur=0.05, duree=14):
     cle(obj, "scale", f + 6 + duree, (1, 1, 1))
 
 
-paupieres = [D["Mocha_Paupiere_G"], D["Mocha_Paupiere_D"]]
-Z_PAUP = paupieres[0].location.z
-
-
-def yeux_mocha(f, etat):
-    """« mi-clos » (défaut), « fermes », « ouverts » (surprise)."""
-    dz, sz = {"mi-clos": (0, 1.0), "fermes": (-0.012, 1.7), "ouverts": (0.016, 0.8)}[etat]
-    for p in paupieres:
-        cle(p, "location", f, (p.location.x, p.location.y, Z_PAUP + dz))
-        cle(p, "scale", f, (0.026, 0.013, 0.013 * sz))
+# Yeux de Mocha : outil commun (pupilles, paupières, sourcils — voir YEUX_MOCHA)
+yeux_mocha = runpy.run_path(os.path.join(OUTILS, "outils_animation.py"))["yeux_mocha"]
 
 
 # ---------------------------------------------------------------------------
@@ -586,6 +578,27 @@ soleil.data.keyframe_insert("energy", frame=2160)
 soleil.data.energy = 2.4
 soleil.data.keyframe_insert("energy", frame=2250)
 
+# Regard de Mocha : ses réactions aux catastrophes de Bip
+yeux_mocha(1, "agace", regard=(-0.7, 0))          # hook : il fixe Bip, au milieu de la mousse
+yeux_mocha(60, "agace", regard=(-0.7, 0))
+yeux_mocha(62, "mi-clos")
+yeux_mocha(566, "content", regard=(-0.8, 0))      # Bip prend la vapeur au visage : petit plaisir
+yeux_mocha(640, "content", regard=(-0.8, 0))
+yeux_mocha(650, "mi-clos")
+yeux_mocha(722, "agace")                          # regard caméra
+yeux_mocha(776, "agace")
+yeux_mocha(782, "mi-clos")
+yeux_mocha(1040, "agace", regard=(-0.8, -0.2))    # essuyé comme un torchon
+yeux_mocha(1088, "agace", regard=(-0.8, -0.2))
+yeux_mocha(1310, "ouverts", regard=(-0.6, -0.5))  # la mousse monte
+yeux_mocha(1400, "mefiant", regard=(-0.8, 0))
+yeux_mocha(1495, "mefiant", regard=(-0.8, 0))
+yeux_mocha(1501, "agace", regard=(-0.7, 0))       # la catastrophe (même image que le début)
+yeux_mocha(1700, "agace", regard=(-0.7, 0))
+yeux_mocha(1730, "attendri", regard=(-0.4, -0.8))  # la tasse… parfaite pour faire la sieste
+yeux_mocha(1790, "content", regard=(-0.4, -0.8))
+yeux_mocha(1900, "content")
+
 constantes(bip, '["expression"]')
 
 # Lumière plus douce dans la cuisine (évite la surexposition)
@@ -595,15 +608,17 @@ D["Contre_Jour"].data.energy = 10
 for o in ("Tasse_Corps", "Machine_Corps"):
     contour(D[o], 0.006)
 
-# Gros plans de la fin : la mousse au premier plan ne doit pas cacher Bip ni Mocha
-degager_premier_plan(1651, 1771, [(-0.2, -0.06), (-0.17, -0.08), TASSE_FIN[:2]])
-degager_premier_plan(1771, 1981, [MOCHA_MILIEU[:2], TASSE_FIN[:2]])
-degager_premier_plan(1981, 2161, [(-0.17, -0.08), (-0.19, -0.04), TASSE_FIN[:2]])
+# Appels dans l'ordre chronologique : chaque plan rétablit la visibilité à sa fin,
+# le plan suivant (qui commence à la même image) doit donc passer après.
 # Plans larges : on garde la marée de mousse, mais l'écran « erreur » de Bip (catastrophe, aussi
 # montrée en ouverture) et la tasse où dort Mocha (image finale) restent lisibles.
 degager_premier_plan(1, 61, [(-0.2, -0.06)], marge=0.03)
 degager_premier_plan(1501, 1651, [(-0.2, -0.06)], marge=0.03)
-degager_premier_plan(2161, 2251, [(-0.19, -0.04), TASSE_FIN[:2]], marge=0.06)
+# Gros plans de la fin : la mousse au premier plan ne doit pas cacher Bip ni Mocha
+degager_premier_plan(1651, 1771, [(-0.2, -0.06), (-0.17, -0.08), TASSE_FIN[:2]])
+degager_premier_plan(1771, 1981, [MOCHA_MILIEU[:2], TASSE_FIN[:2]])
+degager_premier_plan(1981, 2161, [(-0.17, -0.08), (-0.19, -0.04), TASSE_FIN[:2]])
+degager_premier_plan(2161, 2251, [(-0.19, -0.04), TASSE_FIN[:2]], marge=0.06)  # image finale
 
 
 # Rendu : EEVEE propre et rapide = 4 passes + 4 rayons d'ombre + débruiteur OpenImageDenoise

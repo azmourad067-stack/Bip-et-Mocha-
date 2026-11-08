@@ -244,15 +244,72 @@ def finir_expressions():
     constantes(bpy.data.objects["Bip"], '["expression"]')
 
 
-def yeux_mocha(f, etat, cote=None):
-    """« mi-clos » (défaut), « fermes », « ouverts » (surprise). cote = "G" ou "D" pour un seul œil."""
-    dz, sz = {"mi-clos": (0, 1.0), "fermes": (-0.012, 1.7), "ouverts": (0.016, 0.8)}[etat]
+# Les yeux de Mocha. Pour chaque œil (bords mesurés sur l'œil : -1 = en bas, 0 = au milieu, +1 = en haut) :
+#   haut     = (bord de la paupière haute, inclinaison en °) — inclinaison + = coin intérieur bas (colère),
+#              - = coin intérieur haut (tristesse). -1.1 = œil fermé.
+#   bas      = bord de la paupière basse (-1 = invisible ; plus haut = regard plissé, satisfait)
+#   pupille  = largeur, hauteur (fente fine = agacé, ronde et grande = surpris / attendri)
+#   sourcil  = montée en m, inclinaison en ° (même convention que la paupière)
+#   reflet   = le petit point de lumière (False quand l'œil est fermé)
+YEUX_MOCHA = {
+    "mi-clos": dict(haut=(-0.25, 0), bas=-1, pupille=(0.006, 0.015), sourcil=(0, 0)),
+    "fermes": dict(haut=(-1.15, 0), bas=-0.7, pupille=(0.006, 0.015), sourcil=(-0.003, 0), reflet=False),
+    "ouverts": dict(haut=(0.8, 0), bas=-1, pupille=(0.012, 0.016), sourcil=(0.012, -8)),
+    "agace": dict(haut=(-0.35, 16), bas=-0.65, pupille=(0.0035, 0.014), sourcil=(-0.004, 28)),
+    "triste": dict(haut=(-0.05, -14), bas=-1, pupille=(0.011, 0.015), sourcil=(0.006, -25)),
+    "content": dict(haut=(-0.4, -4), bas=-0.45, pupille=(0.006, 0.015), sourcil=(0.002, -6)),
+    "attendri": dict(haut=(0.5, -6), bas=-0.8, pupille=(0.015, 0.017), sourcil=(0.008, -12)),
+    "mefiant": {"G": dict(haut=(-0.5, 10), bas=-0.55, pupille=(0.004, 0.014), sourcil=(-0.004, 20)),
+                "D": dict(haut=(0.45, -4), bas=-1, pupille=(0.005, 0.015), sourcil=(0.01, -10))},
+}
+_OEIL = (0.02, 0.022)  # demi-hauteur de l'œil, marge des paupières au-delà de l'œil
+
+
+def _base(o):
+    """Position de repos d'un objet, mémorisée au premier appel."""
+    if "base" not in o:
+        o["base"] = tuple(o.location)
+    return o["base"]
+
+
+def yeux_mocha(f, etat, cote=None, regard=(0, 0)):
+    """Expression des yeux de Mocha (voir YEUX_MOCHA) : mi-clos (défaut), fermes, ouverts, agace,
+    triste, content, attendri, mefiant. cote = "G" ou "D" pour un seul œil.
+    regard = (gauche/droite, bas/haut) de -1 à 1 : où regardent les pupilles (0, 0 = droit devant)."""
+    O = bpy.data.objects
     for c in ((cote,) if cote else ("G", "D")):
-        p = bpy.data.objects[f"Mocha_Paupiere_{c}"]
-        if "z0" not in p:
-            p["z0"] = p.location.z
-        cle(p, "location", f, (p.location.x, p.location.y, p["z0"] + dz))
-        cle(p, "scale", f, (0.026, 0.013, 0.013 * sz))
+        e = YEUX_MOCHA[etat]
+        e = e.get(c, e) if "G" in e else e
+        sens = 1 if c == "G" else -1  # même inclinaison = expression symétrique sur les deux yeux
+        bord, incl = e["haut"]
+        p = O[f"Mocha_Paupiere_{c}"]
+        x, y, z = _base(p)
+        centre_oeil = O[f"Mocha_Oeil_{c}"].location.z
+        haut, bas = centre_oeil + _OEIL[1], centre_oeil + bord * _OEIL[0]
+        cle(p, "location", f, (x, y, (haut + bas) / 2))
+        cle(p, "scale", f, (0.026, 0.013, max(0.001, (haut - bas) / 2)))
+        rot(p, f, y=sens * incl)
+        if f"Mocha_Paupiere_Bas_{c}" not in O:
+            continue  # ancien modèle (sans pupilles ni sourcils)
+        b = O[f"Mocha_Paupiere_Bas_{c}"]
+        x, y, z = _base(b)
+        bas, haut = centre_oeil - _OEIL[1], centre_oeil + e["bas"] * _OEIL[0]
+        cle(b, "location", f, (x, y, (haut + bas) / 2))
+        cle(b, "scale", f, (0.026, 0.013, (haut - bas) / 2) if e["bas"] > -0.95 else (0, 0, 0))
+        lx, lz = e["pupille"]
+        pu = O[f"Mocha_Pupille_{c}"]
+        cle(pu, "scale", f, (lx, 0.003, lz))
+        r = O[f"Mocha_Regard_{c}"]
+        x, y, z = _base(r)
+        marge = max(0.003, 0.021 - lx)
+        cle(r, "location", f, (x + regard[0] * marge, y, z + regard[1] * 0.006))
+        dzs, incls = e["sourcil"]
+        s = O[f"Mocha_Sourcil_{c}"]
+        x, y, z = _base(s)
+        cle(s, "location", f, (x, y, z + dzs))
+        rot(s, f, y=sens * incls)
+        ref = O[f"Mocha_Reflet_{c}"]
+        cle(ref, "scale", f, (0.0042, 0.0015, 0.0042) if e.get("reflet", True) else (0, 0, 0))
 
 
 # ---------------------------------------------------------------------------

@@ -117,12 +117,38 @@ d'écran noir) + un petit « bip » → ça rend Bip vivant pour presque rien.
 | Curieux | Ouverts | En avant | Dressée en point d'interrogation |
 | Sommeil | Fermés | Détendues | Enroulée autour du corps |
 
+### Les yeux de Mocha (8 expressions prêtes à l'emploi)
+![Expressions des yeux de Mocha](../assets/design/mocha-yeux-expressions.png)
+
+De gauche à droite et de haut en bas : `mi-clos` (blasé, défaut) · `agace` · `mefiant` · `content` ·
+`ouverts` (surpris) · `attendri` · `triste` · `fermes`.
+
+L'œil est fait de 6 pièces, chacune avec un rôle :
+| Pièce | Rôle dans l'émotion |
+|---|---|
+| **Paupière haute** (`Mocha_Paupiere_G/D`) | Ouverture de l'œil + **inclinaison** : coin intérieur bas = colère, coin intérieur haut = tristesse |
+| **Paupière basse** (`Mocha_Paupiere_Bas_G/D`) | Regard plissé : satisfait, mesquin, agacé |
+| **Pupille** (`Mocha_Pupille_G/D`) | Fente fine = agacé / méfiant · ronde et grande = surpris / attendri (comme un vrai chat) |
+| **Regard** (`Mocha_Regard_G/D`) | Où il regarde : Bip, le bouton, la caméra… **le regard raconte le gag** |
+| **Reflet** (`Mocha_Reflet_G/D`) | Le point de lumière qui rend le regard vivant (disparaît quand l'œil est fermé) |
+| **Sourcil** (`Mocha_Sourcil_G/D`) | Petite touffe plus foncée : hauteur + inclinaison, renforce chaque émotion |
+
+Dans un script d'épisode :
+```python
+A.yeux_mocha(120, "mefiant", regard=(-0.8, 0))   # à l'image 120, méfiant, regarde vers la gauche (Bip)
+A.yeux_mocha(150, "content", cote="D")           # un seul œil
+```
+Règle d'or : **Mocha reste blasé (`mi-clos`) la plupart du temps**. Les autres expressions sont des
+« pics » courts, ce qui les rend plus drôles. Toutes les valeurs sont dans `YEUX_MOCHA`
+(`tools/blender/outils_animation.py`) : faciles à ajuster ou à compléter.
+
 ### Modélisation dans Blender
 1. **Ne pas partir de zéro** : générer une base avec un outil image → 3D à partir de l'image
    de référence (voir prompts ci-dessous), puis **simplifier** et **retopologiser** dans Blender
    (viser < 10 000 faces).
 2. **Formes** : tête quasi sphérique, corps en goutte, pattes en cylindres arrondis, queue = courbe épaisse.
-3. **Yeux** : sphères séparées + **paupières** animées par *shape keys* (ouvert / mi-clos / fermé / plissé).
+3. **Yeux** : sphères séparées + paupières haute et basse, pupille, reflet et sourcil (voir « Les yeux
+   de Mocha » ci-dessus). Garder les **mêmes noms d'objets** pour que les animations existantes s'appliquent.
 4. **Rig** : Rigify propose un modèle de quadrupède (*Cat* dans les métarigs animaux à activer)
    — c'est la partie la plus technique, prévoir du temps en semaine 2.
 5. **Queue** : chaîne de 6–8 os + contrainte *Spline IK* → très facile à animer.

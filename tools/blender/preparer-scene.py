@@ -378,6 +378,11 @@ m_pel = materiau("Mocha_Pelage", COUL["mocha_pelage"], 0.7)
 m_fon = materiau("Mocha_Fonce", COUL["mocha_fonce"], 0.7)
 m_cre = materiau("Mocha_Creme", COUL["mocha_creme"], 0.7)
 m_yeux = materiau("Mocha_Yeux", COUL["mocha_yeux"], 0.2)
+m_paup = materiau("Mocha_Paupiere", hexa("#93693F"), 0.8)  # un ton plus foncé : la paupière avance, donc reçoit plus de lumière
+m_pupille = materiau("Mocha_Pupille", hexa("#1B1410"), 0.65)  # mat : sinon le noir reflète la fenêtre et vire au gris
+m_reflet = materiau("Mocha_Reflet", hexa("#FFFFFF"), 0.1)
+m_reflet.node_tree.nodes["Principled BSDF"].inputs["Emission Color"].default_value = (1, 1, 1, 1)
+m_reflet.node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = 2.0
 
 mocha = bpy.data.objects.new("Mocha", None)
 mocha.empty_display_type = "PLAIN_AXES"
@@ -409,8 +414,22 @@ for cote, s in (("G", -1), ("D", 1)):
     ranger(o, C_MOCHA)
     o.parent = mocha
     contour(o, 0.003)
-    # Paupière mi-close (la signature de Mocha)
-    sphere(f"Mocha_Paupiere_{cote}", 1.0, (s * 0.045, -0.092, 0.343), (0.026, 0.013, 0.013), m_pel, C_MOCHA, mocha)
+    # Regard : pupille (fente ou ronde) + reflet, sur un pivot qui permet de regarder ailleurs
+    regard = bpy.data.objects.new(f"Mocha_Regard_{cote}", None)
+    regard.empty_display_size = 0.01
+    C_MOCHA.objects.link(regard)
+    regard.parent = mocha
+    regard.location = (s * 0.045, -0.1, 0.333)
+    sphere(f"Mocha_Pupille_{cote}", 1.0, (0, 0, 0), (0.006, 0.003, 0.015), m_pupille, C_MOCHA, regard)
+    sphere(f"Mocha_Reflet_{cote}", 1.0, (s * 0.045 + 0.008, -0.1035, 0.325), (0.0042, 0.0015, 0.0042), m_reflet, C_MOCHA, mocha)
+    # Paupière mi-close (la signature de Mocha) — elle peut aussi s'incliner (colère, tristesse)
+    contour(sphere(f"Mocha_Paupiere_{cote}", 1.0, (s * 0.045, -0.092, 0.343), (0.026, 0.013, 0.013), m_paup, C_MOCHA, mocha), 0.08)
+    # Paupière basse (air satisfait / mesquin) : aplatie et invisible au repos
+    bas = sphere(f"Mocha_Paupiere_Bas_{cote}", 1.0, (s * 0.045, -0.092, 0.312), (0.026, 0.013, 0.003), m_paup, C_MOCHA, mocha)
+    contour(bas, 0.08)
+    bas.scale = (0, 0, 0)
+    # Petits sourcils (touffes plus foncées) : ils portent la moitié de l'émotion
+    sphere(f"Mocha_Sourcil_{cote}", 1.0, (s * 0.048, -0.089, 0.372), (0.017, 0.004, 0.0045), m_fon, C_MOCHA, mocha)
 
 courbe("Mocha_Queue", [(0.07, 0.06, 0.03), (0.17, 0.0, 0.05), (0.16, -0.02, 0.17), (0.12, -0.03, 0.2)], 0.014, m_pel, C_MOCHA, mocha)
 sphere("Mocha_Queue_Bout", 0.016, (0.12, -0.03, 0.2), mat=m_fon, coll=C_MOCHA, parent=mocha)
