@@ -8,7 +8,10 @@ Dans Blender : onglet Scripting → Ouvrir ce fichier → ▶ (la scène est pr�
 retouchée à la main : chaque plan est un repère « marqueur » dans la timeline).
 
 En ligne de commande (rendu des images PNG) :
-    blender -b --python episodes/01-le-cafe/animatique.py -- --rendu DOSSIER [--pourcentage 50] [--debut 1 --fin 2250]
+    blender -b --python episodes/01-le-cafe/animatique.py -- --rendu DOSSIER [--debut 1 --fin 2250]
+Options : --pourcentage 100 (taille de l'image, 100 = 1080 × 1920), --echantillons 4,
+          --ombres 4 (rayons d'ombre), --sans-debruitage (désactive OpenImageDenoise).
+Réglage par défaut ≈ 9 s par image sur 4 processeurs sans carte graphique (bien plus rapide avec une carte graphique).
 """
 
 import math
@@ -281,6 +284,20 @@ def bouffee(f, centre, direction=(0, 0, 1), taille=0.05, duree=24):
 
 for v in vapeur:
     cle(v, "scale", 1, (0, 0, 0))
+
+
+def degager_premier_plan(f1, f2, sujets, marge=0.16):
+    """Astuce de tournage : pendant un gros plan, cache les bulles placées entre la caméra
+    (devant, en y négatif) et les personnages filmés, pour qu'elles ne masquent pas leur visage."""
+    for s in mousse:
+        if any(s.location.y < cy - 0.02 and abs(s.location.x - cx) < marge + s["taille"] for cx, cy in sujets):
+            s.hide_render = False
+            if not s.get("degagee"):  # visible par défaut, une seule fois
+                s.keyframe_insert("hide_render", frame=1)
+                s["degagee"] = True
+            s.keyframe_insert("hide_render", frame=f2)
+            s.hide_render = True
+            s.keyframe_insert("hide_render", frame=f1)
 
 
 def mousse_etat(f, facteur):
@@ -578,9 +595,52 @@ D["Contre_Jour"].data.energy = 10
 for o in ("Tasse_Corps", "Machine_Corps"):
     contour(D[o], 0.006)
 
-# Rendu : EEVEE, peu d'échantillons (animatique)
-sc.eevee.taa_render_samples = 16
-sc.render.image_settings.file_format = "PNG"
+# Gros plans de la fin : la mousse au premier plan ne doit pas cacher Bip ni Mocha
+degager_premier_plan(1651, 1771, [(-0.2, -0.06), (-0.17, -0.08), TASSE_FIN[:2]])
+degager_premier_plan(1771, 1981, [MOCHA_MILIEU[:2], TASSE_FIN[:2]])
+degager_premier_plan(1981, 2161, [(-0.17, -0.08), (-0.19, -0.04), TASSE_FIN[:2]])
+# Plans larges : on garde la marée de mousse, mais l'écran « erreur » de Bip (catastrophe, aussi
+# montrée en ouverture) et la tasse où dort Mocha (image finale) restent lisibles.
+degager_premier_plan(1, 61, [(-0.2, -0.06)], marge=0.03)
+degager_premier_plan(1501, 1651, [(-0.2, -0.06)], marge=0.03)
+degager_premier_plan(2161, 2251, [(-0.19, -0.04), TASSE_FIN[:2]], marge=0.06)
+
+
+# Rendu : EEVEE propre et rapide = 4 passes + 4 rayons d'ombre + débruiteur OpenImageDenoise
+def regler_rendu(echantillons=4, rayons_ombre=4, debruitage=True):
+    sc.eevee.taa_render_samples = echantillons
+    sc.eevee.shadow_ray_count = rayons_ombre  # supprime le grain des ombres douces
+    sc.render.image_settings.file_format = "PNG"
+    if not debruitage:
+        sc.render.use_compositing = False
+        return
+    vl = sc.view_layers[0]
+    vl.use_pass_normal = vl.use_pass_diffuse_color = True  # guident le débruiteur
+    if hasattr(sc, "compositing_node_group"):  # Blender 5.x
+        arbre = bpy.data.node_groups.get("Debruitage") or bpy.data.node_groups.new("Debruitage", "CompositorNodeTree")
+        arbre.nodes.clear()
+        if not arbre.interface.items_tree:
+            arbre.interface.new_socket("Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+        sortie = arbre.nodes.new("NodeGroupOutput")
+        sc.compositing_node_group = arbre
+    else:  # Blender 4.x
+        sc.use_nodes = True
+        arbre = sc.node_tree
+        arbre.nodes.clear()
+        sortie = arbre.nodes.new("CompositorNodeComposite")
+    calques = arbre.nodes.new("CompositorNodeRLayers")
+    debruiteur = arbre.nodes.new("CompositorNodeDenoise")
+    sorties = calques.outputs
+    arbre.links.new(sorties["Image"], debruiteur.inputs["Image"])
+    arbre.links.new(sorties["Normal"], debruiteur.inputs["Normal"])
+    albedo = sorties.get("Diffuse Color") or sorties.get("DiffCol")
+    if albedo:
+        arbre.links.new(albedo, debruiteur.inputs["Albedo"])
+    arbre.links.new(debruiteur.outputs[0], sortie.inputs[0])
+    sc.render.use_compositing = True
+
+
+regler_rendu()
 
 # ---------------------------------------------------------------------------
 # Rendu en ligne de commande
@@ -591,10 +651,10 @@ if "--" in sys.argv:
     def arg(nom, defaut):
         return type(defaut)(args[args.index(nom) + 1]) if nom in args else defaut
 
+    regler_rendu(arg("--echantillons", 4), arg("--ombres", 4), "--sans-debruitage" not in args)
     dossier = arg("--rendu", "")
     if dossier:
-        sc.render.resolution_percentage = arg("--pourcentage", 50)
-        sc.eevee.taa_render_samples = arg("--echantillons", 16)
+        sc.render.resolution_percentage = arg("--pourcentage", 100)
         sc.frame_start, sc.frame_end = arg("--debut", 1), arg("--fin", 2250)
         sc.render.filepath = os.path.join(dossier, "")
         sc.render.use_overwrite = False  # reprise possible : les images déjà rendues sont gardées
@@ -602,7 +662,7 @@ if "--" in sys.argv:
         bpy.ops.render.render(animation=True)
     if "--images" in args:  # rendus de contrôle : --images 1,140,560
         dossier = arg("--controle", ".")
-        sc.render.resolution_percentage = arg("--pourcentage", 50)
+        sc.render.resolution_percentage = arg("--pourcentage", 100)
         for f in [int(x) for x in arg("--images", "1").split(",")]:
             sc.frame_set(f)
             sc.render.filepath = os.path.join(dossier, f"controle_{f:04d}.png")

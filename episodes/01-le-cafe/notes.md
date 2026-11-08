@@ -15,8 +15,11 @@ produire la version finale.
 **▶ Aperçu de la v1** : [`animatique-v1-apercu.mp4`](animatique-v1-apercu.mp4) (540 × 960, version allégée
 pour le dépôt ; la version 1080 × 1920 se régénère avec le montage ci-dessus).
 
-**Rendu de la v1** : 540 × 960 (agrandi en 1080 × 1920 au montage), EEVEE 2 échantillons,
-≈ 2,7 s par image sur 4 processeurs (≈ 1 h 40 pour l'épisode).
+**Rendu** : 1080 × 1920 natif, EEVEE 4 échantillons + 4 rayons d'ombre + débruiteur
+OpenImageDenoise (≈ 9,5 s par image sur 4 processeurs sans carte graphique, ≈ 6 h pour l'épisode ;
+beaucoup plus rapide sur un PC avec carte graphique).
+La v1 (540 × 960, 2 échantillons) était trop granuleuse : les ombres douces des lampes « Area »
+ont besoin de plusieurs rayons, sinon chaque surface est mouchetée.
 
 ### Ce qui est validé par l'animatique
 - Durée : **75 s** → éligible Creator Rewards (≥ 60 s).
@@ -28,13 +31,11 @@ pour le dépôt ; la version 1080 × 1920 se régénère avec le montage ci-dess
   `Bip`, `Bip_Ecran`, `Mocha`, `Mocha_Tete`, `Mocha_Paupiere_G/D` → l'animation existante se réapplique.
 - **Animation plus fine** : bras de Bip qui appuient vraiment sur les boutons, pattes de Mocha
   (aujourd'hui il « glisse »), antenne qui suit les mouvements.
-- **Mousse** : plus de volume et de « remplissage » dans la scène de catastrophe ; dans les gros
-  plans de la fin (0:55 → 1:10), certaines boules passent devant la caméra et cachent l'écran de
-  Bip → les écarter de l'axe des caméras `CAM_BIP` / `CAM_MOCHA`.
-- **Grain** : 2 échantillons laissent un léger grain malgré le débruitage au montage.
+- **Mousse** : plus de volume et de « remplissage » dans la scène de catastrophe.
+  (v2 : les bulles placées devant la caméra sont cachées pendant les gros plans et devant
+  l'écran de Bip / la tasse dans les plans larges — `degager_premier_plan()`.)
 - **Sons** : les sons synthétisés sont des maquettes ; remplacer au moins le miaou et le
   ronronnement par de vrais enregistrements (ou une banque sous licence commerciale).
-- Rendu final : 1080 × 1920 natif, 16 échantillons ou plus.
 
 ## IA (traçabilité)
 - **Animatique v1 entièrement produite par Claude (IA)** par programmation : modèles en formes
