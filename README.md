@@ -25,6 +25,7 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 | 7 | [Pipeline IA](docs/07-pipeline-ia.md) | Où et comment utiliser l'IA sans perdre la monétisation |
 | 8 | [Fiches personnages](docs/08-fiches-personnages.md) | Proportions, palette, 18 expressions de Bip, guide Blender, prompts IA |
 | 9 | [Apprendre Blender — semaine 1](docs/09-apprentissage-blender.md) | Programme jour par jour + script de préparation de scène |
+| 10 | [Rendre un épisode sur votre PC](docs/10-rendu-sur-pc.md) | Vidéo MP4 avec le son en un clic (carte graphique = 5 à 10× plus rapide) |
 
 **Scripts des épisodes** : [`episodes/`](episodes/) (épisodes 01 à 06 écrits).
 
@@ -35,6 +36,7 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 - `tools/blender/outils_animation.py` — outils communs aux scripts d'épisode (images clés, expressions, caméras, rendu propre)
 - `tools/audio/sons.py` — bibliothèque de sons synthétisés (bips, bruitages, musique) → `assets/sons/`
 - `tools/assembler-video.sh` — images + bande-son → MP4 TikTok
+- `tools/rendre-episode.bat` + `tools/blender/rendre-video.py` — rendu d'un épisode en MP4 avec le son, en un clic sous Windows
 
 ## Statut
 
