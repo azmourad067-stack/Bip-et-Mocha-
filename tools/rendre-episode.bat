@@ -22,6 +22,9 @@ rem --- 2. Quel episode ?
 cd /d "%~dp0.."
 set "NUM=%~1"
 if "%NUM%"=="" set /p NUM=Numero de l'episode a rendre (ex. 06) : 
+rem   accepte 1, 01 ou " 6 " : espaces retires, zero ajoute devant un seul chiffre
+if defined NUM set "NUM=%NUM: =%"
+if defined NUM if "%NUM:~1%"=="" set "NUM=0%NUM%"
 set "EP="
 for /d %%D in ("episodes\%NUM%-*") do set "EP=%%D"
 if not defined EP (
