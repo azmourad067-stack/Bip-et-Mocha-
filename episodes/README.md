@@ -19,7 +19,7 @@ part d'IA, résultat de monétisation).
 | 03 | [L'ennemi](03-l-ennemi/script.md) | Salon | 75 s | ✅ | ⬜ | ⬜ |
 | 04 | [Batterie 1 %](04-batterie-1/script.md) | Cuisine → salon | 70 s | ✅ | ⬜ | ⬜ |
 | 05 | [Le rayon de soleil](05-le-rayon-de-soleil/script.md) | Salon | 75 s | ✅ | ⬜ | ⬜ |
-| 06 | [Le bouton rouge](06-le-bouton-rouge/script.md) | Cuisine | 65 s | ✅ | ⬜ | ⬜ |
+| 06 | [Le bouton rouge](06-le-bouton-rouge/script.md) | Cuisine | 66 s | ✅ | 🟡 animatique v1 codée ([notes](06-le-bouton-rouge/notes.md)) | ⬜ |
 
 ## Ordre de production conseillé (≠ ordre de publication)
 Produire **par décor** pour ne pas jongler entre les fichiers :

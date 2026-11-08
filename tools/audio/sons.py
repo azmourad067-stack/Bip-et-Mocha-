@@ -283,6 +283,119 @@ def plop():
     return 0.45 * glissando(500, 160, 0.12) * enveloppe(int(0.12 * SR), 0.002, 0.08)
 
 
+def gros_clic():
+    """Le CLIC du bouton rouge : plus grave et plus « mécanique » que clic()."""
+    corps = glissando(900, 300, 0.05) * np.exp(-np.linspace(0, 8, int(0.05 * SR)))
+    return 0.6 * suite(0.8 * passe_haut(bruit(0.006)), corps)
+
+
+def tictac(duree=4.0, bpm0=60, bpm1=None, vol=0.25):
+    """Tic-tac d'horloge ; bpm1 > bpm0 = le tic-tac accélère (suspense)."""
+    bpm1 = bpm1 or bpm0
+    piste = silence(duree)
+    t, k = 0.0, 0
+    while t < duree - 0.05:
+        f = 2600 if k % 2 == 0 else 2000
+        x = passe_haut(bruit(0.012)) * 0.5 + glissando(f, f, 0.012) * 0.5
+        x *= enveloppe(len(x), 0.001, 0.01)
+        i = int(t * SR)
+        piste[i:i + len(x)] += x[:len(piste) - i]
+        bpm = bpm0 + (bpm1 - bpm0) * (t / duree) ** 2
+        t += 60 / bpm
+        k += 1
+    return vol * piste
+
+
+def pas(nombre=4, ecart=0.32, vol=0.3):
+    """Des pas (humains) qui s'éloignent : chocs sourds de plus en plus faibles."""
+    piste = silence(nombre * ecart + 0.3)
+    for k in range(nombre):
+        x = passe_bas(bruit(0.09), 0.06) * np.exp(-np.linspace(0, 6, int(0.09 * SR)))
+        x /= np.max(np.abs(x)) + 1e-9
+        i = int(k * ecart * SR)
+        piste[i:i + len(x)] += x * (1 - k / (nombre + 1))
+    return vol * piste
+
+
+def soupir():
+    """Mocha soupire (souffle filtré qui descend)."""
+    n = int(1.1 * SR)
+    x = passe_bas(bruit(1.1), 0.08) * np.linspace(1, 0.2, n) ** 1.5
+    x /= np.max(np.abs(x)) + 1e-9
+    return 0.25 * x * enveloppe(n, 0.15, 0.4) + 0.4 * _voix_chat([260, 220, 190], [600, 500, 400], 1.1, 0.25, souffle=0.8)
+
+
+def alarme(fois=3):
+    """Bip d'alarme : deux tons alternés rapides."""
+    return suite(*[suite(bip(1600, 0.08, 0.5), bip(1200, 0.08, 0.5)) for _ in range(fois)])
+
+
+def non_non():
+    """Bip sévère « non-non » : deux bips graves et secs."""
+    return suite(bip(500, 0.1, 0.55), silence(0.08), bip(420, 0.14, 0.55))
+
+
+def vrombissement(duree=3.0, vol=0.3):
+    """Le moteur de l'aspirateur-robot : bourdonnement grave + souffle."""
+    t = _t(duree)
+    moteur = glissando(95, 110, duree, "scie") * 0.5 + 0.3 * np.sin(2 * np.pi * 190 * t)
+    souffle = passe_bas(bruit(duree), 0.25) * 0.6
+    x = (moteur + souffle) * (1 + 0.15 * np.sin(2 * np.pi * 11 * t))
+    x /= np.max(np.abs(x)) + 1e-9
+    return vol * x * enveloppe(len(t), 0.25, 0.05)
+
+
+# ---------------------------------------------------------------------------
+# Musiques de situation (originales)
+# ---------------------------------------------------------------------------
+def musique_suspense(duree, bpm=84, graine=5):
+    """« Pas touche » : pizzicatos graves en La mineur, avec des silences. Discrète, sous les tic-tac."""
+    rng = np.random.default_rng(graine)
+    piste = silence(duree + 1)
+    temps = 60 / bpm
+    notes = [hz("A", 3), hz("C", 4), hz("E", 4), hz("B", 3), hz("A", 3), hz("G", 3), hz("E", 3)]
+    t, k = 0.0, 0
+    while t < duree:
+        if rng.random() < 0.7:
+            x = pincee(notes[k % len(notes)], temps * 0.9, 0.22)
+            i = int(t * SR)
+            piste[i:i + len(x)] += x
+        if k % 8 == 0:  # nappe très grave tous les 2 temps forts
+            x = glissando(hz("A", 1), hz("A", 1), 8 * temps, "triangle") * enveloppe(int(8 * temps * SR), 0.8, 1.0)
+            i = int(t * SR)
+            piste[i:i + len(x)] += 0.08 * x[:len(piste) - i]
+        t += temps
+        k += 1
+    return piste[: int(duree * SR)]
+
+
+def musique_disco(duree, bpm=120):
+    """Boule à facettes : grosse caisse à chaque temps, charleston, basse en octaves (Mi mineur)."""
+    piste = silence(duree + 1)
+    temps = 60 / bpm
+    basses = [hz("E", 2), hz("E", 2), hz("G", 2), hz("A", 2)]
+
+    def poser(x, t):
+        i = int(t * SR)
+        if i < len(piste):
+            piste[i:i + len(x)] += x[:len(piste) - i]
+
+    k, t = 0, 0.0
+    while t < duree:
+        grosse = glissando(140, 45, 0.18) * np.exp(-np.linspace(0, 7, int(0.18 * SR)))
+        poser(0.6 * grosse, t)
+        poser(0.12 * passe_haut(bruit(0.04)) * enveloppe(int(0.04 * SR), 0.001, 0.03), t + temps / 2)
+        b = basses[(k // 4) % 4]
+        poser(pincee(b, temps / 2, 0.3), t)
+        poser(pincee(b * 2, temps / 2, 0.22), t + temps / 2)
+        if k % 2 == 1:  # accord « stab » sur les contretemps
+            for n in (hz("E", 5), hz("G", 5), hz("B", 5)):
+                poser(0.05 * glissando(n, n, 0.12, "carre") * enveloppe(int(0.12 * SR), 0.005, 0.06), t)
+        t += temps
+        k += 1
+    return piste[: int(duree * SR)]
+
+
 # ---------------------------------------------------------------------------
 # Musique originale « Boucle du matin » (Do majeur, 96 bpm)
 # ---------------------------------------------------------------------------
@@ -381,7 +494,11 @@ if __name__ == "__main__":
         "bruit-clic": clic(), "bruit-vapeur": vapeur(), "bruit-glouglou": glouglou(2.0), "bruit-bulles": bulles_montantes(3.0),
         "bruit-bloop": bloop(), "bruit-retour-arriere": retour_arriere(), "bruit-frottement": frottement(),
         "bruit-glissade": glissade(), "bruit-ressort": ressort(), "bruit-plouf": plouf(), "bruit-plop": plop(),
+        "bruit-gros-clic": gros_clic(), "bruit-tictac": tictac(4.0, 60, 140), "bruit-pas": pas(),
+        "mocha-soupir": soupir(), "bip-alarme": alarme(), "bip-non-non": non_non(),
+        "bruit-aspirateur": vrombissement(3.0, 0.5),
         "musique-boucle-du-matin": musique(10.0),
+        "musique-suspense": musique_suspense(10.0), "musique-disco": musique_disco(10.0),
     }
     for nom, son in catalogue.items():
         p = Piste(len(son) / SR + 0.05)

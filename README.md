@@ -32,6 +32,7 @@ et conçue dès le départ pour être éligible à la monétisation TikTok.
 - `tools/generer-design.js` — visuels de référence (planches, écrans de Bip)
 - `tools/blender/preparer-scene.py` — scène Blender prête à animer (Bip, Mocha, caméras)
 - `tools/blender/decor-cuisine.py` — décor de la cuisine
+- `tools/blender/outils_animation.py` — outils communs aux scripts d'épisode (images clés, expressions, caméras, rendu propre)
 - `tools/audio/sons.py` — bibliothèque de sons synthétisés (bips, bruitages, musique) → `assets/sons/`
 - `tools/assembler-video.sh` — images + bande-son → MP4 TikTok
 
