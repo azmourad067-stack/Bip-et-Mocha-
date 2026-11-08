@@ -12,6 +12,9 @@ produire la version finale.
 | Bande-son (bips, bruitages, musique) | `bande-son.py` → `bande-son.wav` | `python episodes/01-le-cafe/bande-son.py` (numpy requis) |
 | Montage vidéo | `tools/assembler-video.sh` | `tools/assembler-video.sh DOSSIER_IMAGES bande-son.wav sortie.mp4` |
 
+**▶ Aperçu de la v1** : [`animatique-v1-apercu.mp4`](animatique-v1-apercu.mp4) (540 × 960, version allégée
+pour le dépôt ; la version 1080 × 1920 se régénère avec le montage ci-dessus).
+
 **Rendu de la v1** : 540 × 960 (agrandi en 1080 × 1920 au montage), EEVEE 2 échantillons,
 ≈ 2,7 s par image sur 4 processeurs (≈ 1 h 40 pour l'épisode).
 
@@ -25,7 +28,10 @@ produire la version finale.
   `Bip`, `Bip_Ecran`, `Mocha`, `Mocha_Tete`, `Mocha_Paupiere_G/D` → l'animation existante se réapplique.
 - **Animation plus fine** : bras de Bip qui appuient vraiment sur les boutons, pattes de Mocha
   (aujourd'hui il « glisse »), antenne qui suit les mouvements.
-- **Mousse** : plus de volume et de « remplissage » dans la scène de catastrophe.
+- **Mousse** : plus de volume et de « remplissage » dans la scène de catastrophe ; dans les gros
+  plans de la fin (0:55 → 1:10), certaines boules passent devant la caméra et cachent l'écran de
+  Bip → les écarter de l'axe des caméras `CAM_BIP` / `CAM_MOCHA`.
+- **Grain** : 2 échantillons laissent un léger grain malgré le débruitage au montage.
 - **Sons** : les sons synthétisés sont des maquettes ; remplacer au moins le miaou et le
   ronronnement par de vrais enregistrements (ou une banque sous licence commerciale).
 - Rendu final : 1080 × 1920 natif, 16 échantillons ou plus.
