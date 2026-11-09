@@ -10,6 +10,8 @@ le mur du fond à y = 0.45. Règle de l'univers : AUCUN texte lisible dans le d�
 """
 
 import math
+import os
+import runpy
 
 import bpy
 
@@ -197,6 +199,10 @@ def construire_cuisine():
             p.use_smooth = True
         _ranger(f, coll)
 
+    # Style « studio » (bois veiné, carrelage émaillé, panneaux, lumière de fenêtre) si les personnages l'ont
+    style = os.path.join(os.path.dirname(os.path.abspath(__file__)), "style-studio.py") if "__file__" in globals() else ""
+    if bpy.data.objects.get("Bip_Torse") and os.path.isfile(style):
+        runpy.run_path(style)["habiller_cuisine"]()
     return o
 
 

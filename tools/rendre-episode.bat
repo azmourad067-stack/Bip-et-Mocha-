@@ -39,7 +39,7 @@ if not exist "%EP%\animatique.py" (
 rem --- 3. Rendu : scene animee + son + video MP4
 echo.
 echo Rendu de %EP% avec "%BLENDER%"
-echo (comptez 1 a 2 heures avec une carte graphique ; laissez le PC branche)
+echo (comptez 2 a 4 heures avec une carte graphique ; laissez le PC branche)
 echo.
 "%BLENDER%" -b --python "%EP%\animatique.py" --python "tools\blender\rendre-video.py" -a
 echo.

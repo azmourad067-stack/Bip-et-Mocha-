@@ -2,7 +2,8 @@
 
 Les épisodes sont entièrement décrits par des scripts (`episodes/XX-…/animatique.py`) : votre PC
 reconstruit la scène, l'anime et la calcule. **Avec une carte graphique, c'est 5 à 10 fois plus rapide**
-que dans le cloud (≈ 1 à 2 h par épisode au lieu de 5 à 6 h).
+que dans le cloud (≈ 2 à 4 h par épisode avec le style « studio » — pelage, reflets, flou —
+contre une trentaine d'heures sur le serveur).
 
 Résultat : `episodes/XX-…/rendu/episode-XX.mp4` — vertical 1080 × 1920, 30 images/s, **avec la bande-son**,
 prêt à être importé dans CapCut ou TikTok.

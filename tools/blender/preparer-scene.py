@@ -30,6 +30,8 @@ import bpy
 warnings.filterwarnings("ignore", category=DeprecationWarning)  # use_nodes (Blender 5.x)
 
 DEMO = globals().get("DEMO", True)  # False = pas d'animation de démonstration
+# « studio » = rendu type film d'animation (plastique laqué, pelage, grands yeux) ; « simple » = blockouts
+STYLE = globals().get("STYLE", "studio")
 
 # Si le script ne trouve pas le projet tout seul, coller ici le chemin du dossier
 # du projet (celui qui contient « assets », « docs », « tools »), par exemple :
@@ -483,6 +485,16 @@ sc.camera = cam_large
 # Planches de référence (vue de face : touche 1 du pavé numérique)
 reference("Ref_Bip", "bip-proportions.png", 1.0, 0.22, 0.21, 0.4, C_REF)
 reference("Ref_Mocha", "mocha-proportions.png", 1.1, 0.45 + 0.3, 0.23, 0.6, C_REF)
+
+# ---------------------------------------------------------------------------
+# 4 bis. Style « studio » (tools/blender/style-studio.py) : mêmes noms d'objets, nouveau look
+# ---------------------------------------------------------------------------
+if STYLE == "studio":
+    import runpy
+    STUDIO = runpy.run_path(os.path.join(RACINE, "tools", "blender", "style-studio.py"))
+    STUDIO["habiller_bip"]()
+    STUDIO["habiller_mocha"]()
+    STUDIO["reglages_image"](sc)
 
 # ---------------------------------------------------------------------------
 # 5. Démo : Bip avance, réfléchit, a une idée, est ravi (5 s)

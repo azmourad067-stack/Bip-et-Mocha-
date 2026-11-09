@@ -77,9 +77,10 @@ K["tasse"].location = (-0.72, 0.2, 0)  # la tasse XXL de l'épisode 01 est rang�
 cle, pos, rot, rotz, ech, expr, saut = A.cle, A.pos, A.rot, A.rotz, A.ech, A.expr, A.saut
 
 # Articulations : épaules de Bip, épaule avant droite de Mocha (pour tendre la patte)
+EX, EY, EZ = bip.get("epaule", (0.095, 0, 0.17))  # articulation des bras (selon le style des personnages)
 epaule = {
-    "D": A.pivot("Bip_Epaule_D", [D["Bip_Bras_D"], D["Bip_Main_D"]], (0.095, 0, 0.17), bip),
-    "G": A.pivot("Bip_Epaule_G", [D["Bip_Bras_G"], D["Bip_Main_G"]], (-0.095, 0, 0.17), bip),
+    "D": A.pivot("Bip_Epaule_D", [D["Bip_Bras_D"], D["Bip_Main_D"]], (EX, EY, EZ), bip),
+    "G": A.pivot("Bip_Epaule_G", [D["Bip_Bras_G"], D["Bip_Main_G"]], (-EX, EY, EZ), bip),
 }
 m_pelage = D["Mocha_Corps"].data.materials[0]
 jambe = A.sphere("Mocha_Jambe_D", 1.0, (0, 0, 0), m_pelage, ech=(0.022, 0.022, 0.085))
@@ -236,7 +237,7 @@ A.plans([
 BIP_0 = (-0.22, -0.1, 0)
 MOCHA_0 = (0.0, 0.1, 0)        # derrière le boîtier : sa patte tombe pile sur le bouton
 DODO = (0.27, -0.075, 0)      # là où Mocha va dormir, à portée de patte du bouton
-BIP_SEUL = (-0.12, -0.12, 0)  # Bip à côté du boîtier, le bras droit au-dessus du bouton
+BIP_SEUL = (-0.09, -0.12, 0)  # Bip à côté du boîtier, le bras droit au-dessus du bouton
 
 # Valeurs de départ
 eclairage(1, False)
@@ -437,14 +438,14 @@ rotz(bip, 1345, 0)
 
 # 0:45 FOIS 3 — un tout petit doigt de Bip… CLIC
 bras(1355, "D")
-bras(1378, "D", y=-12)
-bras(1384, "D", y=-24)  # la main tombe pile sur le dôme du bouton
+bras(1378, "D", x=-15, y=-60)
+bras(1384, "D", x=-25, y=-85)  # la main tombe pile sur le dôme du bouton
 ech(bip, 1378, 1, 1, 1)
 ech(bip, 1384, 1, 1, 0.85)
 appui(1384)
 lueur(1384, 4.0)
 expr(1386, "clin-oeil", clignement=False)
-bras(1395, "D", y=-24)
+bras(1395, "D", x=-25, y=-85)
 bras(1405, "D")
 ech(bip, 1395, 1, 1, 0.85)
 ech(bip, 1405, 1, 1, 1)

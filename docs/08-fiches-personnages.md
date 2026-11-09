@@ -13,6 +13,38 @@ Tous les visuels sont dans [`assets/design/`](../assets/design/) et se régénè
 
 ---
 
+## 🎬 Style « studio » (le look officiel de la série depuis novembre 2026)
+
+Rendu doux et brillant façon film d'animation 3D : matières laquées, vrai pelage, grands yeux,
+lumière de fenêtre et arrière-plan légèrement flou. Tout est dans
+[`tools/blender/style-studio.py`](../tools/blender/style-studio.py), appliqué automatiquement par
+`preparer-scene.py` et `decor-cuisine.py` (les scripts d'épisode n'ont rien à changer).
+
+| Bip et Mocha dans la cuisine | Bip (gros plan) |
+|---|---|
+| ![Style studio](../assets/design/style-studio-cuisine.jpg) | ![Bip studio](../assets/design/bip-studio.jpg) |
+
+![Yeux de Mocha](../assets/design/mocha-yeux-studio.jpg)
+*Yeux de Mocha : mi-clos (son air habituel), ouverts, agacé / content, attendri, triste.*
+
+**Bip v2** — robot en plastique laqué bleu-vert (`#3FA19D`) : grosse tête-écran arrondie posée sur
+un petit corps, oreilles rondes bleu nuit à point orange, antenne à boule orange, voyant lumineux
+sur la poitrine, bras articulés (épaule et main bleu nuit, bracelet orange), petite roue.
+L'écran garde les 18 expressions (avec un reflet de vitre).
+
+**Mocha v2** — vrai pelage café au lait (poils plus foncés à la racine), ventre crème, visage
+dégagé, grands yeux ambrés vernis (×1,55), paupières en « coques » qui épousent l'œil, nez rose,
+oreilles douces à intérieur rose, queue touffue.
+
+**Image** — rendu AgX « Punchy », reflets et lumière indirecte en lancer de rayons (EEVEE),
+profondeur de champ automatique (la mise au point suit la cible de la caméra).
+
+**Temps de rendu** — ≈ 50 s par image en 1080 × 1920 sur le serveur (processeur seul) : un épisode
+se calcule donc sur un PC avec carte graphique (voir [doc 10](10-rendu-sur-pc.md)).
+L'ancien style « blockout » reste disponible : `STYLE = "simple"` avant `preparer-scene.py`.
+
+---
+
 ## 🤖 BIP
 
 ![Bip — proportions](../assets/design/bip-proportions.png)

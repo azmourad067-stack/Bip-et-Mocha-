@@ -14,6 +14,7 @@ preparer-scene.py (« Bip », « Bip_Ecran », « Mocha », « Mocha_Paupiere_G/
 import math
 import os
 import random
+import runpy
 import sys
 
 import bpy
@@ -275,8 +276,14 @@ def _base(o):
 def yeux_mocha(f, etat, cote=None, regard=(0, 0)):
     """Expression des yeux de Mocha (voir YEUX_MOCHA) : mi-clos (défaut), fermes, ouverts, agace,
     triste, content, attendri, mefiant. cote = "G" ou "D" pour un seul œil.
-    regard = (gauche/droite, bas/haut) de -1 à 1 : où regardent les pupilles (0, 0 = droit devant)."""
+    regard = (gauche/droite, bas/haut) de -1 à 1 : où regardent les pupilles (0, 0 = droit devant).
+    Les tailles suivent la propriété « echelle_yeux » de Mocha (grands yeux du style studio)."""
     O = bpy.data.objects
+    if "Mocha" in O and O["Mocha"].get("yeux") == "coques":
+        return _yeux_coques(f, etat, cote, regard)
+    k = O["Mocha"].get("echelle_yeux", 1.0) if "Mocha" in O else 1.0
+    oeil_h, marge_p = _OEIL[0] * k, _OEIL[1] * k
+    lx_p, ly_p = 0.026 * k, (0.0145 if k > 1 else 0.013)
     for c in ((cote,) if cote else ("G", "D")):
         e = YEUX_MOCHA[etat]
         e = e.get(c, e) if "G" in e else e
@@ -285,31 +292,60 @@ def yeux_mocha(f, etat, cote=None, regard=(0, 0)):
         p = O[f"Mocha_Paupiere_{c}"]
         x, y, z = _base(p)
         centre_oeil = O[f"Mocha_Oeil_{c}"].location.z
-        haut, bas = centre_oeil + _OEIL[1], centre_oeil + bord * _OEIL[0]
+        haut, bas = centre_oeil + marge_p, centre_oeil + bord * oeil_h
         cle(p, "location", f, (x, y, (haut + bas) / 2))
-        cle(p, "scale", f, (0.026, 0.013, max(0.001, (haut - bas) / 2)))
+        cle(p, "scale", f, (lx_p, ly_p, max(0.001, (haut - bas) / 2)))
         rot(p, f, y=sens * incl)
         if f"Mocha_Paupiere_Bas_{c}" not in O:
             continue  # ancien modèle (sans pupilles ni sourcils)
         b = O[f"Mocha_Paupiere_Bas_{c}"]
         x, y, z = _base(b)
-        bas, haut = centre_oeil - _OEIL[1], centre_oeil + e["bas"] * _OEIL[0]
+        bas, haut = centre_oeil - marge_p, centre_oeil + e["bas"] * oeil_h
         cle(b, "location", f, (x, y, (haut + bas) / 2))
-        cle(b, "scale", f, (0.026, 0.013, (haut - bas) / 2) if e["bas"] > -0.95 else (0, 0, 0))
+        cle(b, "scale", f, (lx_p, ly_p, (haut - bas) / 2) if e["bas"] > -0.95 else (0, 0, 0))
         lx, lz = e["pupille"]
         pu = O[f"Mocha_Pupille_{c}"]
-        cle(pu, "scale", f, (lx, 0.003, lz))
+        cle(pu, "scale", f, (lx * k, 0.003, lz * k))
         r = O[f"Mocha_Regard_{c}"]
         x, y, z = _base(r)
-        marge = max(0.003, 0.021 - lx)
-        cle(r, "location", f, (x + regard[0] * marge, y, z + regard[1] * 0.006))
+        marge = max(0.003, 0.021 - lx) * k
+        cle(r, "location", f, (x + regard[0] * marge, y, z + regard[1] * 0.006 * k))
         dzs, incls = e["sourcil"]
         s = O[f"Mocha_Sourcil_{c}"]
         x, y, z = _base(s)
-        cle(s, "location", f, (x, y, z + dzs))
+        cle(s, "location", f, (x, y, z + dzs * k))
         rot(s, f, y=sens * incls)
         ref = O[f"Mocha_Reflet_{c}"]
-        cle(ref, "scale", f, (0.0042, 0.0015, 0.0042) if e.get("reflet", True) else (0, 0, 0))
+        cle(ref, "scale", f, (0.0042 * k, 0.0015, 0.0042 * k) if e.get("reflet", True) else (0, 0, 0))
+
+
+def _angle_paupiere(bord):
+    """Bord de paupière (-1 bas de l'œil … 1 haut) → rotation de la demi-coque (degrés)."""
+    if bord < -1:
+        return min(105.0, 90.0 + (-bord - 1) * 60)
+    return -math.degrees(math.asin(max(-1.0, min(0.98, bord))))
+
+
+def _yeux_coques(f, etat, cote, regard):
+    """Yeux du style studio : paupières en demi-coques qui pivotent, pupille qui glisse sur l'œil."""
+    O = bpy.data.objects
+    k = O["Mocha"].get("echelle_yeux", 1.0)
+    for c in ((cote,) if cote else ("G", "D")):
+        e = YEUX_MOCHA[etat]
+        e = e.get(c, e) if "G" in e else e
+        sens = 1 if c == "G" else -1
+        bord, incl = e["haut"]
+        rot(O[f"Mocha_Paupiere_{c}"], f, x=_angle_paupiere(bord), y=sens * incl)
+        rot(O[f"Mocha_Paupiere_Bas_{c}"], f, x=_angle_paupiere(e["bas"]) if e["bas"] > -0.95 else 95)
+        lx, lz = e["pupille"]
+        cle(O[f"Mocha_Pupille_{c}"], "scale", f, (lx / 0.024 * 0.72, 0.03, lz / 0.02 * 0.7))
+        rot(O[f"Mocha_Regard_{c}"], f, x=-regard[1] * 25, z=regard[0] * 35)
+        dzs, incls = e["sourcil"]
+        s = O[f"Mocha_Sourcil_{c}"]
+        x, y, z = _base(s)
+        cle(s, "location", f, (x, y, z + dzs * k))
+        rot(s, f, y=sens * incls)
+        cle(O[f"Mocha_Reflet_{c}"], "scale", f, (0.17, 0.03, 0.17) if e.get("reflet", True) else (0, 0, 0))
 
 
 # ---------------------------------------------------------------------------
@@ -351,6 +387,9 @@ def regler_rendu(echantillons=4, rayons_ombre=4, debruitage=True):
     if hasattr(sc.eevee, "shadow_ray_count"):  # Blender 4.2 et plus
         sc.eevee.shadow_ray_count = rayons_ombre  # supprime le grain des ombres douces
     sc.render.image_settings.file_format = "PNG"
+    style = os.path.join(os.path.dirname(os.path.abspath(__file__)), "style-studio.py") if "__file__" in globals() else ""
+    if bpy.data.objects.get("Bip_Torse") and os.path.isfile(style):  # personnages au style studio
+        runpy.run_path(style)["reglages_image"](sc)
     if not debruitage:
         sc.render.use_compositing = False
         return

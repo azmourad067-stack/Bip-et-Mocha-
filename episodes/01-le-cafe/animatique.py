@@ -627,6 +627,8 @@ def regler_rendu(echantillons=4, rayons_ombre=4, debruitage=True):
     if hasattr(sc.eevee, "shadow_ray_count"):  # Blender 4.2 et plus
         sc.eevee.shadow_ray_count = rayons_ombre  # supprime le grain des ombres douces
     sc.render.image_settings.file_format = "PNG"
+    if D.get("Bip_Torse"):  # personnages au style studio : image AgX, reflets, profondeur de champ
+        runpy.run_path(os.path.join(OUTILS, "style-studio.py"))["reglages_image"](sc)
     if not debruitage:
         sc.render.use_compositing = False
         return
