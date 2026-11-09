@@ -32,7 +32,7 @@ un petit corps, oreilles rondes bleu nuit à point orange, antenne à boule oran
 sur la poitrine, bras articulés (épaule et main bleu nuit, bracelet orange), petite roue.
 L'écran garde les 18 expressions (avec un reflet de vitre).
 
-**Mocha v2** — vrai pelage café au lait (poils plus foncés à la racine), ventre crème, visage
+**Mocha v2** — vrai pelage orange (poils plus foncés à la racine, pointes dorées), ventre crème, visage
 dégagé, grands yeux ambrés vernis (×1,55), paupières en « coques » qui épousent l'œil, nez rose,
 oreilles douces à intérieur rose, queue touffue.
 

@@ -327,10 +327,10 @@ def habiller_mocha():
     mocha = O["Mocha"]
     k = ECHELLE_YEUX_MOCHA
     sans_contour(("Mocha",))
-    pelage = regler("Mocha_Pelage", "#B98A5C", 0.6, sheen=0.5)
-    fonce = regler("Mocha_Fonce", "#6E4428", 0.6, sheen=0.4)
+    pelage = regler("Mocha_Pelage", "#DC8236", 0.6, sheen=0.5)
+    fonce = regler("Mocha_Fonce", "#A84E1A", 0.6, sheen=0.4)
     creme = regler("Mocha_Creme", "#F1DEC4", 0.6, sheen=0.5, sss=0.05)
-    regler("Mocha_Paupiere", "#A0724B", 0.6, sheen=0.5)  # même peau que le visage
+    regler("Mocha_Paupiere", "#C8722E", 0.6, sheen=0.5)  # même peau que le visage
     regler("Mocha_Pupille", "#120C09", 0.25, vernis=1.0, vernis_rug=0.03)
     rose = regler("Mocha_Nez", "#D9827C", 0.35, vernis=0.4)
     oreille_int = regler("Mocha_Oreille_Interieur", "#E9A79B", 0.6, sss=0.2)
@@ -407,7 +407,7 @@ def habiller_mocha():
         q.hide_render = q.hide_viewport = True
         q.name = "Mocha_Queue_Courbe"
         nq.name = "Mocha_Queue"
-        fourrure(nq, mat_poils("Mocha_Poils_Queue", "#7E5434", "#C99B6A"), 0.014, 900, enfants=10)
+        fourrure(nq, mat_poils("Mocha_Poils_Queue", "#A9501C", "#F09A48"), 0.014, 900, enfants=10)
 
     # Pelage : visage dégagé (comme une peau douce), poils longs sur le crâne, les joues et le corps
     def masque_tete(co):
@@ -419,10 +419,10 @@ def habiller_mocha():
         n = co.normalized()
         return 1.0 - 0.7 * _lisser_doux((-n.y - 0.55) / 0.3)
 
-    fourrure(tete, mat_poils("Mocha_Poils", "#8A5E3B", "#D9AE80"), 0.012, 3200, enfants=20, masque=masque_tete)
-    fourrure(corps, mat_poils("Mocha_Poils_Corps", "#8A5E3B", "#D2A576"), 0.014, 3200, enfants=18,
+    fourrure(tete, mat_poils("Mocha_Poils", "#B45A20", "#F6A858"), 0.012, 3200, enfants=20, masque=masque_tete)
+    fourrure(corps, mat_poils("Mocha_Poils_Corps", "#B05820", "#F2A050"), 0.014, 3200, enfants=18,
              masque=masque_corps)
-    fourrure(ventre, mat_poils("Mocha_Poils_Creme", "#CDB08C", "#F6E8D2"), 0.008, 1200, enfants=12)
+    fourrure(ventre, mat_poils("Mocha_Poils_Creme", "#E6C8A0", "#FFF4E4"), 0.008, 1200, enfants=12)
     return mocha
 
 
@@ -639,7 +639,7 @@ def finitions_accessoires():
             o.modifiers.remove(m)
     M = bpy.data.materials
     reglages = {
-        "Mousse": dict(rugosite=0.55, sheen=0.6, sss=0.35),
+        "Mousse": dict(couleur="#FFFFFF", rugosite=0.6, sheen=0.3, sss=0.1),
         "Cafe": dict(rugosite=0.08, vernis=1.0, vernis_rug=0.02),
         "Vapeur": dict(rugosite=0.9, sss=0.4),
         "Boitier": dict(rugosite=0.4, vernis=0.5),
