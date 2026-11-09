@@ -424,6 +424,8 @@ def ligne_de_commande():
     --rendu DOSSIER [--debut a --fin b]   rendu des images PNG (reprenable)
     --images 1,140 --controle DOSSIER     rendus de contrôle
     --pourcentage 100 --echantillons 4 --ombres 4 --sans-debruitage
+    --pas 2                               une image sur 2 (aperçu deux fois plus rapide, 15 im/s)
+    --apercu                              brouillon rapide : 1 poil sur 10, pas de lancer de rayons
     --enregistrer fichier.blend
     """
     if "--" not in sys.argv:
@@ -437,9 +439,15 @@ def ligne_de_commande():
     sc = bpy.context.scene
     regler_rendu(arg("--echantillons", 4), arg("--ombres", 4), "--sans-debruitage" not in args)
     sc.render.resolution_percentage = arg("--pourcentage", 100)
+    if "--apercu" in args:  # pour relire le rythme d'un épisode, pas pour publier
+        sc.render.use_simplify = True
+        sc.render.simplify_child_particles_render = 0.1
+        if hasattr(sc.eevee, "use_raytracing"):
+            sc.eevee.use_raytracing = False
     dossier = arg("--rendu", "")
     if dossier:
         sc.frame_start, sc.frame_end = arg("--debut", sc.frame_start), arg("--fin", sc.frame_end)
+        sc.frame_step = arg("--pas", 1)
         sc.render.filepath = os.path.join(dossier, "")
         sc.render.use_overwrite = False  # reprise possible : les images déjà rendues sont gardées
         sc.render.use_placeholder = True
