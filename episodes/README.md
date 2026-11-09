@@ -15,7 +15,7 @@ part d'IA, résultat de monétisation).
 | # | Titre | Décor | Durée visée | Script | Production | Publiée |
 |---|---|---|---|---|---|---|
 | 01 | [Le café](01-le-cafe/script.md) | Cuisine | 75 s | ✅ | 🟡 animatique v1 ([vidéo](01-le-cafe/animatique-v1-apercu.mp4) · [notes](01-le-cafe/notes.md)) | ⬜ |
-| 02 | [Le carton](02-le-carton/script.md) | Salon | 70 s | ✅ | ⬜ | ⬜ |
+| 02 | [Le carton](02-le-carton/script.md) | Salon | 71 s | ✅ | 🟡 animatique v1 codée, style studio ([notes](02-le-carton/notes.md)) | ⬜ |
 | 03 | [L'ennemi](03-l-ennemi/script.md) | Salon | 75 s | ✅ | ⬜ | ⬜ |
 | 04 | [Batterie 1 %](04-batterie-1/script.md) | Cuisine → salon | 70 s | ✅ | ⬜ | ⬜ |
 | 05 | [Le rayon de soleil](05-le-rayon-de-soleil/script.md) | Salon | 75 s | ✅ | ⬜ | ⬜ |
