@@ -25,16 +25,29 @@ lumière de fenêtre et arrière-plan légèrement flou. Tout est dans
 | ![Style studio](../assets/design/style-studio-cuisine.jpg) | ![Bip studio](../assets/design/bip-studio.jpg) |
 
 ![Yeux de Mocha](../assets/design/mocha-yeux-studio.jpg)
-*Yeux de Mocha : mi-clos (son air habituel), ouverts, agacé / content, attendri, triste.*
+*Yeux de Mocha : mi-clos (son air habituel), ouverts, agacé, content, attendri, triste.*
 
 **Bip v2** — robot en plastique laqué bleu-vert (`#3FA19D`) : grosse tête-écran arrondie posée sur
 un petit corps, oreilles rondes bleu nuit à point orange, antenne à boule orange, voyant lumineux
 sur la poitrine, bras articulés (épaule et main bleu nuit, bracelet orange), petite roue.
 L'écran garde les 18 expressions (avec un reflet de vitre).
 
-**Mocha v2** — vrai pelage orange (poils plus foncés à la racine, pointes dorées), ventre crème, visage
-dégagé, grands yeux ambrés vernis (×1,55), paupières en « coques » qui épousent l'œil, nez rose,
-oreilles douces à intérieur rose, queue touffue.
+**Mocha v3 « chaton »** (novembre 2026, d'après la référence « chaton roux de film d'animation ») —
+chaton roux tigré entièrement en poils, couchés vers le bas comme un vrai pelage : visage compris,
+paupières comprises. Rayures en « M » sur le front, deux traits sur les joues, rayures sur le dos et
+anneaux sur la queue. Museau, menton et coussinets de moustaches blancs, poitrail clair. Grands yeux
+**verts** (doré autour de la pupille, cerclés de sombre, un peu de blanc au bord), pupilles **rondes**
+(en fente seulement quand il est agacé), paupières bordées d'un trait sombre. Nez rose en triangle,
+grandes oreilles roses à touffes blanches, 8 moustaches et 4 poils de sourcils. Il garde ses paupières
+mi-closes par défaut : c'est toujours le même Mocha blasé.
+
+| Mocha v3 : blasé (défaut) | Mocha v3 : yeux ouverts |
+|---|---|
+| ![Mocha v3 mi-clos](../assets/design/mocha-v3-mi-clos.jpg) | ![Mocha v3 ouverts](../assets/design/mocha-v3-ouverts.jpg) |
+
+Les couleurs de la robe sont dans `ROBE` et le dessin des rayures dans `habiller_mocha()`
+([`style-studio.py`](../tools/blender/style-studio.py)) : la peau et les poils lisent la même carte
+« Motif » (u = rayure sombre, v = blanc), calculée pièce par pièce.
 
 **Image** — rendu AgX « Punchy », reflets et lumière indirecte en lancer de rayons (EEVEE),
 profondeur de champ automatique (la mise au point suit la cible de la caméra).
@@ -126,14 +139,14 @@ d'écran noir) + un petit « bip » → ça rend Bip vivant pour presque rien.
 |---|---|
 | Taille | **≈ 45 cm assis** (aux oreilles), plus grand que Bip |
 | Silhouette | **Rond et trapu** : grosse tête (≈ 40 % de la hauteur assise), pattes courtes, queue épaisse |
-| Pelage | Café au lait `#C49A6C`, ventre et museau crème `#F3E3CC` |
-| Marques | Bout de la queue, pointe des oreilles et **une « goutte » sur le front** couleur moka `#7A4E2D` (signature visuelle) |
-| Yeux | Ambre `#E8A33D`, pupilles verticales, **paupières mi-closes par défaut** (blasé) |
+| Pelage | Roux tigré : racine `#B4561C`, pointe `#F7A956`, rayures `#7E3410` ; museau, menton et poitrail blancs (v3 ; à l'origine café au lait `#C49A6C`) |
+| Marques | **« M » rayé sur le front** (v3, à la place de l'ancienne « goutte » moka), joues rayées, queue annelée |
+| Yeux | Verts, dorés autour de la pupille (v3 ; ambre à l'origine), pupilles rondes, **paupières mi-closes par défaut** (blasé) |
 | Bouche | Invisible au repos — n'apparaît que pour bâiller ou miauler (donc les rares miaous comptent) |
 | Son | Soupirs, ronronnements, miaous très rares |
 
 ### Pourquoi ces choix
-- **Pas de poils simulés** : aplats de couleur + léger dégradé → rendu rapide, style cohérent avec Bip.
+- ~~Pas de poils simulés~~ (choix de départ, abandonné avec le style « studio » : Mocha a maintenant un vrai pelage).
 - **Paupières mi-closes** = toute la personnalité de Mocha en une forme. Le regard caméra
   blasé est la « signature » des épisodes.
 - **Queue épaisse** = deuxième visage : elle dit l'humeur quand Mocha ne bouge pas.
@@ -163,7 +176,7 @@ L'œil est fait de 6 pièces, chacune avec un rôle :
 | **Pupille** (`Mocha_Pupille_G/D`) | Fente fine = agacé / méfiant · ronde et grande = surpris / attendri (comme un vrai chat) |
 | **Regard** (`Mocha_Regard_G/D`) | Où il regarde : Bip, le bouton, la caméra… **le regard raconte le gag** |
 | **Reflet** (`Mocha_Reflet_G/D`) | Le point de lumière qui rend le regard vivant (disparaît quand l'œil est fermé) |
-| **Sourcil** (`Mocha_Sourcil_G/D`) | Petite touffe plus foncée : hauteur + inclinaison, renforce chaque émotion |
+| **Sourcil** (`Mocha_Sourcil_G/D`) | Petite touffe plus foncée : hauteur + inclinaison, renforce chaque émotion (invisible depuis la v3 « chaton » : les paupières en fourrure suffisent ; l'objet reste pour les anciens scripts) |
 
 Dans un script d'épisode :
 ```python

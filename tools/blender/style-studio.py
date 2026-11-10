@@ -3,7 +3,8 @@ Bip & Mocha — style « studio » : le rendu doux et brillant des films d'anima
 
   - BIP : robot en plastique laqué bleu-vert, tête-écran arrondie posée sur un petit corps,
     oreilles rondes, antenne, bras articulés (accents orange, articulations bleu nuit) ;
-  - MOCHA : vrai pelage (poils), grands yeux brillants à iris dégradé, nez rose, oreilles douces ;
+  - MOCHA : chaton roux tigré à vrais poils (front en « M », museau et poitrail blancs), grands yeux verts,
+    nez rose, grandes oreilles à touffes, moustaches ;
   - CUISINE : bois veiné, carrelage émaillé, façades à panneaux, métal chromé, plante, lumière de fenêtre ;
   - IMAGE : rendu AgX (couleurs « cinéma »), reflets et lumière indirecte en lancer de rayons,
     profondeur de champ (arrière-plan flou, effet « miniature »).
@@ -18,6 +19,7 @@ import math
 
 import bmesh
 import bpy
+from mathutils import Vector, geometry, noise
 
 ECHELLE_YEUX_MOCHA = 1.55 # grands yeux (lus par outils_animation.yeux_mocha)
 EPAULE_BIP = (0.075, 0.0, 0.095)  # articulation des bras (lue par les épisodes)
@@ -251,43 +253,107 @@ def _appliquer_echelle(o):
     o.scale = (1, 1, 1)
 
 
-def mat_poils(nom, racine, pointe):
-    """Poils : plus foncés à la racine, plus clairs à la pointe (donne le volume)."""
+def _melange(nt, fac, a, b):
+    """Mélange de deux couleurs (prises sur des sorties de nœuds) ; renvoie la sortie."""
+    m = nt.nodes.new("ShaderNodeMix")
+    m.data_type = "RGBA"
+    nt.links.new(fac, m.inputs[0])
+    nt.links.new(a, next(i for i in m.inputs if i.identifier == "A_Color"))
+    nt.links.new(b, next(i for i in m.inputs if i.identifier == "B_Color"))
+    return next(o for o in m.outputs if o.identifier == "Result_Color")
+
+
+def _rampe(nt, entree, couleurs):
+    """Rampe de couleurs [(position, "#hex"), …] branchée sur une valeur ; renvoie la sortie couleur."""
+    r = nt.nodes.new("ShaderNodeValToRGB")
+    els = r.color_ramp.elements
+    while len(els) < len(couleurs):
+        els.new(0.5)
+    for e, (pos, c) in zip(els, couleurs):
+        e.position, e.color = pos, lin(c)
+    nt.links.new(entree, r.inputs[0])
+    return r.outputs[0]
+
+
+def _couleur_motif(nt, base, rayure, blanc):
+    """Couleur de base → rayures tigrées (u de la carte « Motif ») → blanc (v)."""
+    uv = nt.nodes.new("ShaderNodeUVMap")
+    uv.uv_map = "Motif"
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(uv.outputs[0], sep.inputs[0])
+    c = _melange(nt, sep.outputs["X"], base, rayure)
+    return _melange(nt, sep.outputs["Y"], c, blanc)
+
+
+# Robe de Mocha (chat roux tigré) : racine des poils → pointe
+ROBE = {"base": ("#B4561C", "#F7A956"), "rayure": ("#7E3410", "#C4621E"), "blanc": ("#F2DEC4", "#FFFFFF")}
+
+
+def mat_poils(nom, racine=None, pointe=None):
+    """Poils : plus foncés à la racine, plus clairs à la pointe (donne le volume).
+    Sans couleurs données : la robe tigrée de Mocha, peinte par la carte « Motif » de l'objet."""
     m = bpy.data.materials.get(nom) or bpy.data.materials.new(nom)
     m.use_nodes = True
     nt = m.node_tree
     nt.nodes.clear()
     info = nt.nodes.new("ShaderNodeHairInfo")
-    rampe = nt.nodes.new("ShaderNodeValToRGB")
-    rampe.color_ramp.elements[0].color = lin(racine)
-    rampe.color_ramp.elements[1].color = lin(pointe)
-    rampe.color_ramp.elements[1].position = 0.85
+    t = info.outputs["Intercept"]
+
+    def degrade(r, p):
+        return _rampe(nt, t, [(0.0, r), (0.85, p)])
+
+    if racine:
+        couleur = degrade(racine, pointe)
+    else:
+        couleur = _couleur_motif(nt, degrade(*ROBE["base"]), degrade(*ROBE["rayure"]), degrade(*ROBE["blanc"]))
+        racine, pointe = ROBE["base"]
     b = nt.nodes.new("ShaderNodeBsdfPrincipled")
-    b.inputs["Roughness"].default_value = 0.55
+    b.inputs["Roughness"].default_value = 0.5
     e = _entree(b, "Sheen Weight")
     if e is not None:
         e.default_value = 0.4
     out = nt.nodes.new("ShaderNodeOutputMaterial")
-    nt.links.new(info.outputs["Intercept"], rampe.inputs[0])
-    nt.links.new(rampe.outputs[0], b.inputs["Base Color"])
+    nt.links.new(couleur, b.inputs["Base Color"])
     nt.links.new(b.outputs[0], out.inputs[0])
     m.diffuse_color = lin(pointe)
     return m
 
 
-def fourrure(o, mat, longueur, nombre, enfants=12, masque=None, epaisseur=0.00038):
-    """Pelage en poils (particules « Hair ») ; masque(co) → 0..1 règle densité et longueur."""
+def peau_tigree(nom):
+    """Peau sous les poils : mêmes rayures et même blanc que le pelage (aucun trou visible)."""
+    m = regler(nom, "#D98A48", 0.75, sheen=0.0)
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    if not b.inputs["Base Color"].is_linked:
+        rgb = []
+        for c in ("#D98A48", "#9C4A1C", "#F6EADB"):  # teinte moyenne des poils : les trous ne se voient pas
+            n = nt.nodes.new("ShaderNodeRGB")
+            n.outputs[0].default_value = lin(c)
+            rgb.append(n.outputs[0])
+        nt.links.new(_couleur_motif(nt, *rgb), b.inputs["Base Color"])
+    return m
+
+
+def fourrure(o, mat, longueur, nombre, enfants=12, masque=None, epaisseur=0.00032, couche=0.8):
+    """Pelage en poils (particules « Hair »).
+    masque(co) → 0..1 (densité et longueur) ou (densité, longueur) ; longueur = longueur maximale.
+    couche : poils couchés le long de la peau, vers le « pôle sud » du maillage (comme un vrai pelage
+    qui descend du crâne) ; 0 = poils dressés."""
     if o.particle_systems:
         return
     if masque:
-        g = o.vertex_groups.new(name="Poils")
+        gd = o.vertex_groups.new(name="Poils")
+        gl = o.vertex_groups.new(name="Poils_Longueur")
         for v in o.data.vertices:
-            g.add([v.index], max(0.0, min(1.0, masque(v.co))), "REPLACE")
+            r = masque(v.co)
+            d, lg = r if isinstance(r, tuple) else (r, r)
+            gd.add([v.index], max(0.0, min(1.0, d)), "REPLACE")
+            gl.add([v.index], max(0.0, min(1.0, lg)), "REPLACE")
     o.data.materials.append(mat)
     o.modifiers.new("Poils", "PARTICLE_SYSTEM")
     ps = o.particle_systems[-1]
     if masque:
-        ps.vertex_group_density = ps.vertex_group_length = "Poils"
+        ps.vertex_group_density, ps.vertex_group_length = "Poils", "Poils_Longueur"
     s = ps.settings
     s.type = "HAIR"
     s.count = nombre
@@ -297,24 +363,30 @@ def fourrure(o, mat, longueur, nombre, enfants=12, masque=None, epaisseur=0.0003
     s.child_percent = 2
     s.rendered_child_count = enfants
     s.child_length = 1.0
-    s.clump_factor = 0.55
-    s.clump_shape = -0.3
-    s.kink = "CURL"
-    s.kink_amplitude = 0.0015
-    s.kink_frequency = 1.5
-    s.roughness_1 = 0.0025
-    s.roughness_endpoint = 0.002
-    s.roughness_2 = 0.001
+    s.clump_factor = 0.35
+    s.clump_shape = -0.1
+    s.roughness_1 = 0.0008
+    s.roughness_endpoint = 0.0006
+    s.roughness_2 = 0.0003
     s.child_radius = 0.004
     s.root_radius = 1.0
     s.tip_radius = 0.0
-    s.shape = -0.25  # pointes fines : effet duveteux
+    s.shape = -0.35  # pointes fines : effet duveteux
     s.radius_scale = epaisseur
     s.display_step, s.render_step = 2, 3
-    s.length_random = 0.35
+    s.length_random = 0.3
     s.use_hair_bspline = True
     s.hair_length = longueur  # en dernier : ce réglage fixe la vitesse « normale » des poils
-    s.factor_random = s.normal_factor * 0.2  # un peu de désordre (en proportion de la longueur)
+    s.factor_random = s.normal_factor * 0.12  # un peu de désordre (en proportion de la longueur)
+    if couche and o.data.uv_layers:
+        o.data.uv_layers.active = o.data.uv_layers[0]  # la carte de la sphère donne le sens « vers le bas »
+        s.tangent_factor = s.normal_factor * couche
+        s.tangent_phase = SENS_POILS
+
+    return ps
+
+
+SENS_POILS = 0.75  # orientation des poils couchés sur la carte UV (fraction de tour) : vers le bas
 
 
 def _lisser_doux(t):
@@ -322,35 +394,118 @@ def _lisser_doux(t):
     return t * t * (3 - 2 * t)
 
 
+def _bande(t, largeur=0.36):
+    """Rayures : 1 au milieu d'une bande sombre, 0 entre deux ; t compté en périodes."""
+    seuil = math.cos(math.pi * largeur)
+    return _lisser_doux((math.cos(2 * math.pi * t) - seuil) / 0.35 + 0.5)
+
+
+def _bruit(co, frequence, ampleur):
+    return noise.noise(co * frequence) * ampleur
+
+
+def _densifier(o, niveaux=2):
+    """Maillage plus fin (subdivision appliquée) : rayures nettes et poils bien répartis."""
+    s = o.modifiers.new("Densifier", "SUBSURF")
+    s.levels = niveaux
+    dg = bpy.context.evaluated_depsgraph_get()
+    me = bpy.data.meshes.new_from_object(o.evaluated_get(dg))
+    o.modifiers.remove(s)
+    o.data = me
+    _lisse(o)
+
+
+def _motif(o, fonction):
+    """Carte « Motif » (u = rayure sombre, v = blanc, de 0 à 1), lue par la peau et les poils."""
+    me = o.data
+    if not me.uv_layers:
+        me.uv_layers.new(name="UVMap")
+    uv = me.uv_layers.get("Motif") or me.uv_layers.new(name="Motif")
+    val = [fonction(v.co) for v in me.vertices]
+    for l in me.loops:
+        uv.data[l.index].uv = val[l.vertex_index]
+
+
+def _prep(o, echelle=None, niveaux=2):
+    """Pièce de Mocha prête pour les poils : échelle appliquée (en mètres), maillage fin."""
+    if echelle:
+        o.scale = echelle
+    for m in list(o.modifiers):
+        o.modifiers.remove(m)
+    _densifier(o, niveaux)
+    _appliquer_echelle(o)
+    return o
+
+
+def moustache(nom, points, rayon, mat, parent, modele):
+    """Vibrisse : courbe fine qui s'effile jusqu'à la pointe."""
+    cu = bpy.data.curves.new(nom, "CURVE")
+    cu.dimensions = "3D"
+    cu.bevel_depth = rayon
+    cu.bevel_resolution = 1
+    cu.resolution_u = 8
+    sp = cu.splines.new("BEZIER")
+    sp.bezier_points.add(len(points) - 1)
+    for i, (bp, p) in enumerate(zip(sp.bezier_points, points)):
+        bp.co = p
+        bp.handle_left_type = bp.handle_right_type = "AUTO"
+        bp.radius = 1.0 - 0.85 * i / (len(points) - 1)
+    cu.materials.append(mat)
+    o = bpy.data.objects.new(nom, cu)
+    _ranger(o, modele)
+    o.parent = parent
+    return o
+
+
 def habiller_mocha():
+    """Mocha « chaton de cinéma » : pelage roux tigré (rayures en M sur le front, joues rayées),
+    museau, menton et poitrail blancs, grands yeux verts, nez rose, grandes oreilles à touffes, moustaches."""
     O = bpy.data.objects
     mocha = O["Mocha"]
     k = ECHELLE_YEUX_MOCHA
     sans_contour(("Mocha",))
-    pelage = regler("Mocha_Pelage", "#DC8236", 0.6, sheen=0.5)
-    fonce = regler("Mocha_Fonce", "#A84E1A", 0.6, sheen=0.4)
-    creme = regler("Mocha_Creme", "#F1DEC4", 0.6, sheen=0.5, sss=0.05)
-    regler("Mocha_Paupiere", "#C8722E", 0.6, sheen=0.5)  # même peau que le visage
-    regler("Mocha_Pupille", "#120C09", 0.25, vernis=1.0, vernis_rug=0.03)
-    rose = regler("Mocha_Nez", "#D9827C", 0.35, vernis=0.4)
-    oreille_int = regler("Mocha_Oreille_Interieur", "#E9A79B", 0.6, sss=0.2)
-    yeux_brillants(bpy.data.materials["Mocha_Yeux"])
+    pelage = peau_tigree("Mocha_Pelage")
+    regler("Mocha_Fonce", ROBE["rayure"][1], 0.6, sheen=0.4)
+    creme = regler("Mocha_Creme", ROBE["blanc"][1], 0.6, sheen=0.5, sss=0.05)
+    paupiere = regler("Mocha_Paupiere", "#D27A34", 0.55, sheen=0.5)
+    regler("Mocha_Pupille", "#050403", 0.5)  # mate : le vernis de l'œil suffit
+    rose = regler("Mocha_Nez", "#E8837E", 0.38, vernis=0.35, sss=0.15)
+    oreille_int = regler("Mocha_Oreille_Interieur", "#F0A69C", 0.6, sss=0.3)
+    vibrisse = regler("Mocha_Moustache", "#FFFDF8", 0.3, sheen=0.2)
+    poils = mat_poils("Mocha_Poils")
+    poils_corps = mat_poils("Mocha_Poils_Corps")
+    poils_queue = mat_poils("Mocha_Poils_Queue")
+    poils_blancs = mat_poils("Mocha_Poils_Creme", *ROBE["blanc"])
+    poils_paupiere = mat_poils("Mocha_Poils_Paupiere", *ROBE["base"])
+    trait_paupiere(paupiere)
 
-    # Formes un peu plus rondes, échelle « appliquée » (les poils poussent alors à la bonne taille)
     corps, tete, ventre = O["Mocha_Corps"], O["Mocha_Tete"], O["Mocha_Ventre"]
-    corps.scale = (0.105, 0.095, 0.135)
-    tete.scale = (0.122, 0.104, 0.1)
-    for o in (corps, tete, ventre, O["Mocha_Queue_Bout"]):
-        _appliquer_echelle(o)
-        if not any(m.type == "SUBSURF" for m in o.modifiers):
-            s = o.modifiers.new("Lissage", "SUBSURF")
-            s.levels = s.render_levels = 1
+    _prep(corps, (0.105, 0.095, 0.135))
+    _prep(tete, (0.122, 0.104, 0.1), 3)
+    _prep(ventre)
+    museau = O["Mocha_Museau"]
+    museau.location = (0, -0.088, 0.287)
+    _prep(museau, (0.05, 0.033, 0.03))
+
+    # Tête : joues plus larges (la bouille d'un chaton), crâne un peu plus plat
+    for v in tete.data.vertices:
+        nx, nz = v.co.x / 0.122, v.co.z / 0.1
+        w = _lisser_doux((0.3 - nz) / 0.6) * _lisser_doux((abs(nx) - 0.25) / 0.55)
+        v.co.x *= 1 + 0.09 * w
+        if nz > 0:
+            v.co.z *= 1 - 0.05 * nz * nz
+    # Museau : deux coussinets de moustaches et un petit creux sous le nez
+    for v in museau.data.vertices:
+        nx = v.co.x / 0.05
+        if v.co.y < 0:
+            v.co.y *= 1 + 0.18 * math.exp(-((abs(nx) - 0.45) / 0.3) ** 2) - 0.08 * math.exp(-(nx / 0.15) ** 2)
 
     # Grands yeux. Tout l'œil vit dans l'espace de l'œil (sphère unité, aplatie par l'échelle de l'œil) :
-    # pupille sur un pivot qui tourne (elle glisse sur la surface), reflet fixe,
+    # pupille sur un pivot qui tourne (elle glisse sur la surface, l'iris la suit), reflet fixe,
     # paupières = demi-coques un peu plus grandes que l'œil qui pivotent pour se fermer.
     mocha["echelle_yeux"] = k
     mocha["yeux"] = "coques"
+    mocha["pupille_ronde"] = True
     for cote, s in (("G", -1), ("D", 1)):
         oe = O[f"Mocha_Oeil_{cote}"]
         oe.location, oe.scale = (s * 0.054, -0.09, 0.333), (0.024 * k, 0.017, 0.02 * k)
@@ -359,45 +514,60 @@ def habiller_mocha():
         regard.parent = oe
         regard.matrix_parent_inverse.identity()
         regard.location, regard.rotation_euler = (0, 0, 0), (0, 0, 0)
+        oe.data.materials[0] = yeux_verts(f"Mocha_Yeux_{cote}", regard)
         pu = O[f"Mocha_Pupille_{cote}"]
         pu.parent = regard
         pu.matrix_parent_inverse.identity()
-        pu.location, pu.scale = (0, -0.995, 0), (0.18, 0.03, 0.52)
+        pu.location, pu.scale = (0, -0.995, 0), (0.29, 0.03, 0.41)
         re = O[f"Mocha_Reflet_{cote}"]
         re.parent = oe
         re.matrix_parent_inverse.identity()
-        re.location, re.scale = (0.36, -0.95, 0.42), (0.17, 0.03, 0.17)
+        re.location, re.scale = (0.34, -0.95, 0.4), (0.15, 0.03, 0.15)
         for nom, haut in ((f"Mocha_Paupiere_{cote}", True), (f"Mocha_Paupiere_Bas_{cote}", False)):
             bpy.data.objects.remove(O[nom], do_unlink=True)
-            demi_coque(nom, oe, haut, bpy.data.materials["Mocha_Paupiere"], corps)
+            pa = demi_coque(nom, oe, haut, paupiere, corps)
+            # Paupière en fourrure (poils courts : ils se fondent dans ceux du front quand l'œil s'ouvre)
+            fourrure(pa, poils_paupiere, 0.0055, 1200 if haut else 500, enfants=16, epaisseur=0.0003,
+                     masque=lambda co: (_lisser_doux((abs(co.z) - 0.12) / 0.25), 1.0))
+            pa.modifiers.move(len(pa.modifiers) - 1, 0)  # poils sur la coque, avant l'épaisseur
+        # Sourcil : une petite touffe plus foncée posée dans le pelage (elle bouge avec les expressions)
         so = O[f"Mocha_Sourcil_{cote}"]
-        so.location = (s * 0.058, -0.092, 0.381)
-        so.scale = (0.019, 0.005, 0.005)
-        # Oreilles douces (cône lisse + intérieur rose) à la place des pyramides
+        so.hide_render = True  # chaton : l'expression passe par les paupières (l'objet reste pour l'animation)
+        # Grandes oreilles (cône lisse, intérieur rose, touffes blanches)
         ancienne = O[f"Mocha_Oreille_{cote}"]
-        loc = (s * 0.075, 0.0, 0.425)
         bpy.data.objects.remove(ancienne, do_unlink=True)
-        o = primitive(f"Mocha_Oreille_{cote}", "cone", loc, pelage, mocha, modele=corps,
-                      rot=(math.radians(-8), math.radians(s * 16), 0), ech=(1, 0.55, 1),
-                      vertices=32, radius1=0.05, radius2=0.005, depth=0.1)
-        s_ = o.modifiers.new("Lissage", "SUBSURF")
-        s_.levels = s_.render_levels = 1
-        i = primitive(f"Mocha_Oreille_Int_{cote}", "cone", (0, -0.012, -0.008), oreille_int, o, modele=corps,
-                      ech=(0.68, 0.4, 0.78), vertices=32, radius1=0.05, radius2=0.005, depth=0.1)
-        i.modifiers.new("Lissage", "SUBSURF").render_levels = 1
+        o = primitive(f"Mocha_Oreille_{cote}", "cone", (s * 0.08, 0.004, 0.43), pelage, mocha, modele=corps,
+                      rot=(math.radians(-10), math.radians(s * 20), 0), ech=(1, 0.5, 1),
+                      vertices=40, radius1=0.06, radius2=0.004, depth=0.125)
+        _densifier(o, 2)
+        _appliquer_echelle(o)
+        i = primitive(f"Mocha_Oreille_Int_{cote}", "cone", (0, -0.013, -0.01), oreille_int, o, modele=corps,
+                      ech=(0.7, 0.42, 0.8), vertices=40, radius1=0.06, radius2=0.004, depth=0.125)
+        _densifier(i, 2)
+        _appliquer_echelle(i)
+        fourrure(o, poils, 0.006, 500, enfants=10, masque=lambda co: (_lisser_doux((co.y + 0.004) / 0.012), 1.0))
+        fourrure(i, poils_blancs, 0.03, 140, enfants=12,
+                 masque=lambda co: (_lisser_doux(-co.y / 0.012) * _lisser_doux((0.01 - co.z) / 0.05),
+                                    0.5 + 0.5 * _lisser_doux((-0.01 - co.z) / 0.04)), epaisseur=0.00022)
 
-    museau = O["Mocha_Museau"]
-    museau.location, museau.scale = (0, -0.09, 0.288), (0.048, 0.032, 0.03)
-    primitive("Mocha_Nez", "uv_sphere", (0, -0.121, 0.306), rose, mocha, modele=corps, ech=(0.011, 0.007, 0.0075),
+    primitive("Mocha_Nez", "uv_sphere", (0, -0.122, 0.305), rose, mocha, modele=corps, ech=(0.0125, 0.007, 0.0085),
               segments=24, ring_count=12, radius=1.0)
-    gf = O["Mocha_Goutte_Front"]
-    gf.location, gf.scale = (0, -0.103, 0.376), (0.0075, 0.004, 0.011)
+    nez = O["Mocha_Nez"]
+    for v in nez.data.vertices:  # nez en triangle arrondi, pointe en bas
+        v.co.x *= 1 - 0.35 * _lisser_doux(-v.co.z)
+    gf = O["Mocha_Goutte_Front"]  # remplacée par le « M » rayé du front
+    gf.hide_render = gf.hide_viewport = True
 
     # Queue : la courbe devient un maillage (pour porter des poils)
     q = O.get("Mocha_Queue")
+    axe = []
     if q and q.type == "CURVE":
-        q.data.bevel_depth = 0.016
-        q.data.bevel_resolution = 3
+        sp = q.data.splines[0]
+        for a, b in zip(sp.bezier_points[:-1], sp.bezier_points[1:]):
+            axe += geometry.interpolate_bezier(a.co, a.handle_right, b.handle_left, b.co, 16)
+        q.data.bevel_depth = 0.017
+        q.data.bevel_resolution = 4
+        q.data.resolution_u = 16
         dg = bpy.context.evaluated_depsgraph_get()
         me = bpy.data.meshes.new_from_object(q.evaluated_get(dg))
         nq = bpy.data.objects.new("Mocha_Queue_Poils", me)
@@ -407,23 +577,117 @@ def habiller_mocha():
         q.hide_render = q.hide_viewport = True
         q.name = "Mocha_Queue_Courbe"
         nq.name = "Mocha_Queue"
-        fourrure(nq, mat_poils("Mocha_Poils_Queue", "#A9501C", "#F09A48"), 0.014, 900, enfants=10)
+        cumul = [0.0]
+        for a, b in zip(axe[:-1], axe[1:]):
+            cumul.append(cumul[-1] + (b - a).length)
 
-    # Pelage : visage dégagé (comme une peau douce), poils longs sur le crâne, les joues et le corps
+        def anneaux(co):
+            i = min(range(len(axe)), key=lambda j: (axe[j] - co).length_squared)
+            return (_bande(cumul[i] / 0.045 + 0.3, 0.42), 0.0)
+
+        _motif(nq, anneaux)
+        fourrure(nq, poils_queue, 0.016, 1300, enfants=12)
+    bout = O["Mocha_Queue_Bout"]
+    bout.data.materials[0] = pelage
+    _prep(bout, None, 1)
+    _motif(bout, lambda co: (0.85, 0.0))
+    fourrure(bout, poils_queue, 0.014, 160, enfants=12)
+
+    # --- Motifs de la robe (coordonnées en mètres, centrées sur chaque pièce) ---
+    def robe_tete(co):
+        n = Vector((co.x / 0.122, co.y / 0.104, co.z / 0.1))
+        b = _bruit(co, 40, 0.06)
+        # « M » du front et rayures du crâne : bandes qui remontent vers l'arrière de la tête
+        front = _lisser_doux((n.z - 0.32) / 0.2)
+        x = co.x * (1 - 0.35 * _lisser_doux((-n.y - 0.2) / 0.5) * (n.z - 0.3)) + b * 0.03
+        r = front * _bande(x / 0.034, 0.34) * (1 - _lisser_doux((abs(n.x) - 0.62) / 0.15))
+        # joues : deux traits qui partent du coin de l'œil vers l'arrière
+        joue = _lisser_doux((abs(n.x) - 0.6) / 0.15) * _lisser_doux((0.3 - n.z) / 0.15) * _lisser_doux((n.y + 0.8) / 0.3)
+        r = max(r, joue * _bande((co.z + 0.006 + b * 0.02 + 0.05 * n.y) / 0.028, 0.3))
+        # nuque
+        nuque = _lisser_doux((n.y - 0.2) / 0.3) * _lisser_doux((0.4 - n.z) / 0.3)
+        r = max(r, nuque * _bande((co.z + b * 0.03) / 0.03, 0.36))
+        # blanc : menton, dessous des joues, tour du museau
+        blanc = _lisser_doux((-n.y - 0.55) / 0.2) * _lisser_doux((-n.z - 0.3) / 0.2) * _lisser_doux((0.5 - abs(n.x)) / 0.2)
+        blanc = max(blanc, 0.7 * _lisser_doux((-n.z - 0.75) / 0.15))
+        return (r * (1 - blanc), blanc)
+
+    def robe_corps(co):
+        n = Vector((co.x / 0.105, co.y / 0.095, co.z / 0.135))
+        b = _bruit(co, 30, 0.08)
+        dos = _lisser_doux((n.y + 0.2) / 0.4)
+        r = dos * _bande((co.z + 0.25 * abs(co.x) - 0.3 * co.y + b * 0.04) / 0.042, 0.4)
+        blanc = 0.6 * _lisser_doux((-n.y - 0.6) / 0.25) * _lisser_doux((0.45 - abs(n.x)) / 0.25)
+        return (r * (1 - blanc), blanc)
+
+    _motif(tete, robe_tete)
+    _motif(corps, robe_corps)
+    _motif(ventre, lambda co: (0.0, 0.55 * _lisser_doux((0.07 - co.z) / 0.12)))  # poitrail clair, pas blanc
+    _motif(museau, lambda co: (0.0, 1.0))
+
+    # --- Pelage ---
+    yeux = [Vector((s * 0.054, -0.08, 0.013)) for s in (-1, 1)]
+
     def masque_tete(co):
-        n = co.normalized()
-        face = _lisser_doux((-n.y - 0.45) / 0.28) * _lisser_doux((0.72 - n.z) / 0.3)
-        return 1.0 - 0.95 * face
+        n = Vector((co.x / 0.122, co.y / 0.104, co.z / 0.1))
+        d = 1.0
+        if co.y < 0:
+            for e in yeux:  # rien sur les yeux : les poils s'arrêtent au bord des paupières
+                r = math.hypot((co.x - e.x) / 0.028, (co.z - e.z) / 0.024)  # bord visible de l'œil (il est enfoncé)
+                d = min(d, _lisser_doux((r - 1.0) / 0.12))
+        if (co.x / 0.05) ** 2 + ((co.y + 0.078) / 0.03) ** 2 + ((co.z + 0.033) / 0.028) ** 2 < 1:
+            d = 0.0  # caché sous le museau
+        face = _lisser_doux((-n.y - 0.3) / 0.35) * _lisser_doux((0.75 - n.z) / 0.3)
+        joue = _lisser_doux((abs(n.x) - 0.45) / 0.3) * _lisser_doux((0.35 - n.z) / 0.4)
+        return d, 0.6 - 0.2 * face + 0.4 * joue
 
     def masque_corps(co):
-        n = co.normalized()
-        return 1.0 - 0.7 * _lisser_doux((-n.y - 0.55) / 0.3)
+        n = Vector((co.x / 0.105, co.y / 0.095, co.z / 0.135))
+        return 1.0, 0.85 - 0.25 * _lisser_doux((-n.y - 0.5) / 0.3) + 0.15 * _lisser_doux((n.z - 0.6) / 0.3)
 
-    fourrure(tete, mat_poils("Mocha_Poils", "#B45A20", "#F6A858"), 0.012, 3200, enfants=20, masque=masque_tete)
-    fourrure(corps, mat_poils("Mocha_Poils_Corps", "#B05820", "#F2A050"), 0.014, 3200, enfants=18,
-             masque=masque_corps)
-    fourrure(ventre, mat_poils("Mocha_Poils_Creme", "#E6C8A0", "#FFF4E4"), 0.008, 1200, enfants=12)
+    def masque_museau(co):
+        nez = math.hypot(co.x / 0.016, (co.z - 0.016) / 0.012)
+        return (_lisser_doux((nez - 1.0) / 0.4) if co.y < 0 else 1.0), 1.0
+
+    fourrure(tete, poils, 0.018, 7500, enfants=20, masque=masque_tete)
+    fourrure(corps, poils_corps, 0.016, 4200, enfants=18, masque=masque_corps)
+    fourrure(ventre, poils_corps, 0.012, 1300, enfants=14)
+    fourrure(museau, poils_blancs, 0.0045, 1100, enfants=10, masque=masque_museau, epaisseur=0.00024)
+    for cote in ("G", "D"):
+        pa = _prep(O[f"Mocha_Patte_{cote}"], None, 1)
+        pa.data.materials[0] = creme
+        fourrure(pa, poils_blancs, 0.006, 260, enfants=12)
+
+    # --- Moustaches : 4 de chaque côté du museau, 2 au-dessus de chaque œil ---
+    for cote, s in (("G", -1), ("D", 1)):
+        for j, (dz, long_, ecart) in enumerate(((0.008, 0.15, 0.03), (0.0, 0.165, 0.008),
+                                                 (-0.008, 0.155, -0.014), (-0.015, 0.13, -0.035))):
+            x0, y0, z0 = s * 0.03, -0.112, 0.291 + dz
+            moustache(f"Mocha_Moustache_{cote}{j}",
+                      [(x0, y0, z0), (x0 + s * long_ * 0.5, y0 + 0.012, z0 + ecart * 0.45 + 0.006),
+                       (x0 + s * long_, y0 + 0.04, z0 + ecart - 0.008)], 0.00055, vibrisse, mocha, corps)
+        for j, (dx, dz) in enumerate(((0.0, 0.0), (0.012, -0.004))):
+            x0, y0, z0 = s * (0.045 + dx), -0.09, 0.372 + dz
+            moustache(f"Mocha_Sourcil_Poil_{cote}{j}",
+                      [(x0, y0, z0), (x0 + s * 0.03, y0 - 0.006, z0 + 0.03), (x0 + s * 0.06, y0 + 0.01, z0 + 0.05)],
+                      0.0004, vibrisse, mocha, corps)
     return mocha
+
+
+def trait_paupiere(m):
+    """Paupière : pelage roux, bordée d'un trait sombre (le « liner » naturel des chats)."""
+    nt = m.node_tree
+    b = nt.nodes["Principled BSDF"]
+    if b.inputs["Base Color"].is_linked:
+        return
+    coord = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(coord.outputs["Object"], sep.inputs[0])
+    absz = nt.nodes.new("ShaderNodeMath")
+    absz.operation = "ABSOLUTE"
+    nt.links.new(sep.outputs["Z"], absz.inputs[0])
+    nt.links.new(_rampe(nt, absz.outputs[0], [(0.0, "#3A1C0C"), (0.16, "#4A2410"), (0.3, "#C96A26")]),
+                 b.inputs["Base Color"])
 
 
 def demi_coque(nom, oeil, haut, mat, modele):
@@ -447,37 +711,39 @@ def demi_coque(nom, oeil, haut, mat, modele):
     return o
 
 
-def yeux_brillants(m):
-    """Iris ambré dégradé (clair au centre, cerne foncé au bord) sous un vernis très brillant."""
-    regler(m, None, 0.3, vernis=1.0, vernis_rug=0.02)
+def yeux_verts(nom, regard):
+    """Œil de chaton : iris vert (doré autour de la pupille, cerclé de sombre), un peu de blanc au bord,
+    sous un vernis très brillant. Le motif suit le pivot du regard : l'iris tourne avec la pupille."""
+    m = bpy.data.materials.get(nom) or bpy.data.materials.new(nom)
+    regler(m, None, 0.3, vernis=1.0, vernis_rug=0.015)
     nt = m.node_tree
     b = nt.nodes["Principled BSDF"]
     if b.inputs["Base Color"].is_linked:
-        return
+        return m
     coord = nt.nodes.new("ShaderNodeTexCoord")
+    coord.object = regard
     sep = nt.nodes.new("ShaderNodeSeparateXYZ")
     nt.links.new(coord.outputs["Object"], sep.inputs[0])
-    carre = []
-    for axe in ("X", "Z"):
-        p = nt.nodes.new("ShaderNodeMath")
-        p.operation = "POWER"
-        p.inputs[1].default_value = 2
-        nt.links.new(sep.outputs[axe], p.inputs[0])
-        carre.append(p)
-    somme = nt.nodes.new("ShaderNodeMath")
-    nt.links.new(carre[0].outputs[0], somme.inputs[0])
-    nt.links.new(carre[1].outputs[0], somme.inputs[1])
-    racine = nt.nodes.new("ShaderNodeMath")
-    racine.operation = "SQRT"
-    nt.links.new(somme.outputs[0], racine.inputs[0])
-    rampe = nt.nodes.new("ShaderNodeValToRGB")
-    els = rampe.color_ramp.elements
-    els[0].position, els[0].color = 0.0, lin("#FFD27A")
-    els[1].position, els[1].color = 0.95, lin("#5A3412")
-    milieu = els.new(0.6)
-    milieu.color = lin("#E39A2E")
-    nt.links.new(racine.outputs[0], rampe.inputs[0])
-    nt.links.new(rampe.outputs[0], b.inputs["Base Color"])
+    xz = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(sep.outputs["X"], xz.inputs[0])
+    nt.links.new(sep.outputs["Z"], xz.inputs[2])
+    rayon = nt.nodes.new("ShaderNodeVectorMath")
+    rayon.operation = "LENGTH"
+    nt.links.new(xz.outputs[0], rayon.inputs[0])
+    # fibres de l'iris : un léger bruit radial
+    fibres = nt.nodes.new("ShaderNodeTexNoise")
+    fibres.inputs["Scale"].default_value = 18.0
+    nt.links.new(coord.outputs["Object"], fibres.inputs["Vector"])
+    r = nt.nodes.new("ShaderNodeMath")
+    r.operation = "MULTIPLY_ADD"
+    nt.links.new(fibres.outputs["Fac"], r.inputs[0])
+    r.inputs[1].default_value = 0.08
+    nt.links.new(rayon.outputs["Value"], r.inputs[2])
+    couleur = _rampe(nt, r.outputs[0], [(0.0, "#F2D35A"), (0.36, "#D8C64C"), (0.5, "#9CC24E"), (0.66, "#6FA640"),
+                                        (0.78, "#3F7A2C"), (0.84, "#1C2E12"), (0.885, "#E9E1D2"), (1.0, "#C9BBA6")])
+    nt.links.new(couleur, b.inputs["Base Color"])
+    m.diffuse_color = lin("#7FB246")
+    return m
 
 
 # ---------------------------------------------------------------------------

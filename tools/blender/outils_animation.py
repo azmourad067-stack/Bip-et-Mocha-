@@ -338,7 +338,11 @@ def _yeux_coques(f, etat, cote, regard):
         rot(O[f"Mocha_Paupiere_{c}"], f, x=_angle_paupiere(bord), y=sens * incl)
         rot(O[f"Mocha_Paupiere_Bas_{c}"], f, x=_angle_paupiere(e["bas"]) if e["bas"] > -0.95 else 95)
         lx, lz = e["pupille"]
-        cle(O[f"Mocha_Pupille_{c}"], "scale", f, (lx / 0.024 * 0.72, 0.03, lz / 0.02 * 0.7))
+        if O["Mocha"].get("pupille_ronde"):  # chaton : pupille ronde, en fente seulement quand il est agacé
+            sx = min(0.5, 0.06 + lx / 0.024 * 0.9)
+            cle(O[f"Mocha_Pupille_{c}"], "scale", f, (sx, 0.03, max(lz / 0.02 * 0.55, 1.19 * sx)))
+        else:
+            cle(O[f"Mocha_Pupille_{c}"], "scale", f, (lx / 0.024 * 0.72, 0.03, lz / 0.02 * 0.7))
         rot(O[f"Mocha_Regard_{c}"], f, x=-regard[1] * 25, z=regard[0] * 35)
         dzs, incls = e["sourcil"]
         s = O[f"Mocha_Sourcil_{c}"]
