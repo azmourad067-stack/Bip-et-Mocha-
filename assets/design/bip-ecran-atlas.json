@@ -1,0 +1,24 @@
+{
+  "colonnes": 6,
+  "lignes": 3,
+  "expressions": [
+    "neutre",
+    "joie",
+    "tres-joyeux",
+    "triste",
+    "pleure",
+    "colere",
+    "surprise",
+    "question",
+    "exclamation",
+    "idee",
+    "amour",
+    "panique",
+    "veille",
+    "batterie-faible",
+    "erreur",
+    "chargement",
+    "clin-oeil",
+    "determine"
+  ]
+}

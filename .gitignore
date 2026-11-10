@@ -1,0 +1,5 @@
+# Fichiers régénérables ou trop lourds pour Git
+episodes/*/bande-son.wav
+episodes/*/rendu/
+*.blend1
+__pycache__/
